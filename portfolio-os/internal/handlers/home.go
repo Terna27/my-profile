@@ -28,7 +28,7 @@ func (h *HomeHandler) HandleHome(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *HomeHandler) HandleClient(w http.ResponseWriter, r *http.Request) {
-	h.render(w, "client")
+	http.Redirect(w, r, "/", http.StatusPermanentRedirect)
 }
 
 func (h *HomeHandler) HandleDeveloper(w http.ResponseWriter, r *http.Request) {
