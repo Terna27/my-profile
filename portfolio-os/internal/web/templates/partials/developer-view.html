@@ -87,27 +87,27 @@
     <main class="editor-stage">
       <!-- Tab Bar -->
       <div class="editor-tabs-bar">
-        <div class="tab-item active" data-tab="home">
+        <button type="button" class="tab-item active" data-tab="home" aria-pressed="true">
           <span class="file-icon icon-go"></span> Home.go <span class="tab-close">×</span>
-        </div>
-        <div class="tab-item" data-tab="about">
+        </button>
+        <button type="button" class="tab-item" data-tab="about" aria-pressed="false">
           <span class="file-icon icon-go"></span> AboutMe.go <span class="tab-close">×</span>
-        </div>
-        <div class="tab-item" data-tab="skills">
+        </button>
+        <button type="button" class="tab-item" data-tab="skills" aria-pressed="false">
           <span class="file-icon icon-go"></span> Skills.go <span class="tab-close">×</span>
-        </div>
-        <div class="tab-item" data-tab="education">
+        </button>
+        <button type="button" class="tab-item" data-tab="education" aria-pressed="false">
           <span class="file-icon icon-go"></span> Education.go <span class="tab-close">×</span>
-        </div>
-        <div class="tab-item" data-tab="projects">
+        </button>
+        <button type="button" class="tab-item" data-tab="projects" aria-pressed="false">
           <span class="file-icon icon-go"></span> Projects.go <span class="tab-close">×</span>
-        </div>
-        <div class="tab-item" data-tab="certificates">
+        </button>
+        <button type="button" class="tab-item" data-tab="certificates" aria-pressed="false">
           <span class="file-icon icon-go"></span> Certificates.go <span class="tab-close">×</span>
-        </div>
-        <div class="tab-item" data-tab="contact">
+        </button>
+        <button type="button" class="tab-item" data-tab="contact" aria-pressed="false">
           <span class="file-icon icon-go"></span> Contact.go <span class="tab-close">×</span>
-        </div>
+        </button>
       </div>
 
       <!-- Editor Viewport -->
@@ -353,6 +353,13 @@
                 </a>
                 {{ end }}
               </div>
+              {{ if .Portfolio.SocialLinks }}
+              <nav class="dev-contact-socials" aria-label="Social profiles">
+                {{ range .Portfolio.SocialLinks }}
+                <a href="{{ .URL }}" target="_blank" rel="noopener noreferrer">{{ .Platform }} ↗</a>
+                {{ end }}
+              </nav>
+              {{ end }}
             </div>
           </section>
 

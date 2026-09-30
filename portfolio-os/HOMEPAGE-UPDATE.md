@@ -34,3 +34,11 @@ The pre-existing portfolio data includes incomplete project entries, unavailable
 - Photo order and hero text: `internal/web/templates/pages/home.html`.
 - Hero layout, colors, and responsive rules: `internal/web/static/css/landing.css`.
 - Profile, skills, projects, and other information: existing admin dashboard.
+
+## Color and mobile refinement
+
+Homepage sections now use opaque teal, blue, and warm sand color bands with contrasting cards and text. The hero animation is unchanged.
+
+The developer page now uses wrapping navigation buttons, shrinkable grid/flex columns, wrapping code and long text, stacked cards, two-column mobile statistics, full-width contact buttons, and viewport-sized portrait dialogs. At mobile widths the duplicate icon rail and explorer are hidden, while all seven sections remain accessible in the tab grid. Social links are also available in Contact. The editor uses the dynamic viewport height to accommodate mobile browser controls.
+
+JavaScript syntax and diff whitespace checks passed. A browser runtime is still unavailable here; verify the page on a real mobile device after rebuilding.

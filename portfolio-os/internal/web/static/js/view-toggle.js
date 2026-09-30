@@ -81,7 +81,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2. Sync Editor Top Tabs
     tabs.forEach((tab) => {
-      tab.classList.toggle('active', tab.getAttribute('data-tab') === tabKey);
+      const selected = tab.getAttribute('data-tab') === tabKey;
+      tab.classList.toggle('active', selected);
+      tab.setAttribute('aria-pressed', String(selected));
     });
 
     // 3. Sync Sidebar File List

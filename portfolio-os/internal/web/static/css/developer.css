@@ -875,3 +875,120 @@ body {
   background: #1ebc59;
   transform: translateY(-1px);
 }
+/* Let every nested flex/grid item shrink to the available screen width. */
+.vscode-app, .vscode-app *, .vscode-app *::before, .vscode-app *::after {
+  box-sizing: border-box;
+}
+.vscode-app {
+  width: 100%;
+  height: 100dvh;
+  --text-muted: #99afbe;
+}
+.vscode-workspace, .editor-stage, .editor-viewport {
+  min-width: 0;
+  min-height: 0;
+}
+.vscode-titlebar { flex-shrink: 0; gap: 12px; }
+.app-title { min-width: 0; overflow-wrap: anywhere; }
+.window-controls, .titlebar-actions, .activity-bar, .sidebar-explorer { flex-shrink: 0; }
+.sidebar-explorer { width: 210px; overflow-y: auto; }
+.folder-title, .social-file-link { overflow-wrap: anywhere; }
+.editor-tabs-bar {
+  height: auto;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  overflow: visible;
+}
+.tab-item {
+  min-height: 40px;
+  border: 0;
+  border-right: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  border-top: 2px solid transparent;
+  text-align: left;
+}
+.tab-item:focus-visible, .view-switch-btn:focus-visible,
+.download-cv-btn:focus-visible { outline: 2px solid var(--cyan-accent); outline-offset: -3px; }
+.home-split-view { grid-template-columns: minmax(0, 1fr) minmax(0, 25%); }
+.home-split-view > *, .ide-stats-row > *, .ide-projects-grid > *,
+.ide-cert-grid > *, .skills-ide-grid > *, .tab-content { min-width: 0; }
+.editor-viewport { overflow-wrap: anywhere; }
+.editor-viewport pre, .editor-viewport code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  tab-size: 2;
+  max-width: 100%;
+}
+.editor-viewport pre { min-width: 0; }
+.editor-viewport img { max-width: 100%; }
+.ide-stats-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ide-projects-grid, .ide-cert-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.edu-top, .meter-info, .ide-proj-actions, .editor-file-status {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.meta-tag-list { display: flex; flex-wrap: wrap; gap: 10px; }
+.meta-pill, .ide-tag { max-width: 100%; overflow-wrap: anywhere; }
+.download-cv-btn { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.dev-modal { padding: 16px; }
+.dev-modal-dialog { width: min(900px, 100%); max-height: calc(100dvh - 32px); }
+.dev-modal-body { min-height: 0; }
+.dev-modal-caption { overflow-wrap: anywhere; overflow-y: auto; }
+.dev-modal-body img { max-height: 60dvh; }
+
+@media (max-width: 1100px) {
+  .sidebar-explorer { display: none; }
+  .editor-viewport { padding: 24px; }
+}
+@media (max-width: 900px) {
+  .home-split-view { grid-template-columns: minmax(0, 1fr); }
+  .ide-projects-grid, .ide-cert-grid { grid-template-columns: minmax(0, 1fr); }
+  .dev-portrait-card { height: 340px; }
+}
+@media (max-width: 600px) {
+  .vscode-titlebar { height: auto; min-height: 52px; padding: 10px 12px; }
+  .window-controls, .theme-badge, .activity-bar { display: none; }
+  .app-title { font-size: 10px; line-height: 1.6; flex: 1; }
+  .titlebar-actions { gap: 0; }
+  .view-switch-btn { display: inline-flex; align-items: center; min-height: 36px; padding: 8px 10px; }
+  .editor-tabs-bar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .tab-item {
+    padding: 10px 6px;
+    min-width: 0;
+    min-height: 44px;
+    justify-content: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    font-size: 10px;
+    gap: 0;
+  }
+  .tab-close, .tab-item .file-icon { display: none; }
+  .editor-viewport { padding: 20px 12px 40px; }
+  .pane-headline { font-size: clamp(24px, 7vw, 32px); line-height: 1.2; }
+  .subpane-headline { font-size: 24px; }
+  .code-block-card, .ide-panel-box { padding: 14px; }
+  .code-block-card { font-size: 12px; line-height: 1.7; }
+  .home-split-view { gap: 16px; }
+  .ide-stats-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .ide-stat-card { padding: 14px 10px; }
+  .dev-portrait-card { height: auto; aspect-ratio: 4 / 5; max-height: 440px; }
+  .portrait-image-wrapper { min-height: 0; }
+  .dev-avatar-img { position: absolute; inset: 0; }
+  .edu-top { flex-direction: column; }
+  .contact-action-group { flex-direction: column; align-items: stretch; gap: 10px; }
+  .contact-action-group .download-cv-btn { width: 100%; text-align: center; margin-top: 0; padding: 12px; }
+  .dev-modal { padding: 12px; }
+  .dev-modal-dialog { max-height: calc(100dvh - 24px); }
+  .dev-modal-caption { padding: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vscode-app *, .vscode-app *::before, .vscode-app *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.dev-contact-socials { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+.dev-contact-socials a { color: var(--cyan-accent); padding: 8px 0; max-width: 100%; overflow-wrap: anywhere; }

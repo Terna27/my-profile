@@ -454,3 +454,43 @@ to {
 .portrait-slide {
   transform:none}
 }
+
+/* Solid, restrained color bands; the animated hero stays intact. */
+#about {
+  background: #164f50;
+  --text-muted: #d2e7e2;
+  --card-bg: #206465;
+  --card-border: #438081;
+}
+#about .pill-badge { background: #d5f1df; color: #174c3f; border-color: #d5f1df; }
+#about .stat-icon-wrapper { background: #327777; color: #f1d690; }
+#about .stat-box h3 { color: #fff0b9; }
+#skills { background: #14283b; }
+#skills .skill-row-card { background: #213c52; border-color: #35576c; }
+#projects {
+  background: #234e77;
+  --text-muted: #d0deed;
+  --card-bg: #193b5b;
+  --card-border: #4d7294;
+}
+#projects .pill-badge { background: #d6e9f9; color: #173e64; border-color: #d6e9f9; }
+#projects .project-showcase-card { background: #193b5b; border-color: #4d7294; }
+#projects .proj-card-top { background: #204969; }
+#projects .badge-tech { background: #31536e; color: #eef6ff; border-color: #53748d; }
+#certificates {
+  background: #ead9b6;
+  --text-main: #2d332e;
+  --text-muted: #53594f;
+  --card-bg: #fff8e9;
+  --card-border: #cdbb97;
+  color: #2d332e;
+}
+#certificates .pill-badge { background: #31564d; color: #fff7df; border-color: #31564d; }
+#certificates .section-center-head h2,
+#certificates .cert-title { color: #263f38; }
+#certificates .cert-issuer, #certificates .cert-link { color: #21594c; }
+#certificates .cert-image-wrapper { background: #d6c5a5; border-color: #cdbb97; }
+#certificates .cert-id { color: #626052; }
+#contact { background: #153e41; --text-muted: #c5dcda; }
+#contact .quote-card { background: #205155; border-color: #467375; }
+#contact .soc-icon { background: #2a5e61; color: #f1f7f6; border-color: #5a8384; }
