@@ -4,58 +4,36 @@
 <canvas id="hero-particles-canvas" aria-hidden="true"></canvas>
 <header class="home-nav container">
   <a href="/" class="home-brand"><span aria-hidden="true">&lt;/&gt;</span> {{ .Portfolio.Profile.Name }}</a>
-  <nav aria-label="Main navigation"><a href="#about">About</a><a href="#skills">Skills</a><a
-      href="#projects">Projects</a><a href="#certificates">Credentials</a><a href="#contact">Contact</a></nav>
+  <nav aria-label="Main navigation"><a href="#about">About</a><a href="#skills">Skills</a><a href="#projects">Projects</a><a href="#certificates">Credentials</a><a href="#contact">Contact</a></nav>
 </header>
 <main>
-  <section id="hero" class="home-hero container" aria-labelledby="home-title">
-    <div class="home-intro">
-      <p class="home-eyebrow">SOFTWARE ENGINEERING &amp; CYBERSECURITY</p>
-      <h1 id="home-title">Thoughtful code.<br><span>Real-world impact.</span></h1>
-      <p class="home-name">Hi, I'm {{ .Portfolio.Profile.Name }}.</p>
-      <p class="home-summary">{{ .Portfolio.Profile.Bio }}</p>
-      <div class="home-actions"><a href="/developer" class="home-button primary">Developer View <span
-            aria-hidden="true">↗</span></a><a href="/resume" download class="home-button">Download Résumé <span
-            aria-hidden="true">↓</span></a></div>
-      <p class="home-availability"><span aria-hidden="true"></span>{{ .Portfolio.Profile.Availability }}</p>
-    </div>
-    <div class="portrait-showcase" role="region" aria-roledescription="carousel" aria-label="Portraits and skills">
-      <div class="portrait-decoration" aria-hidden="true"></div>
-      <div class="portrait-frame"><img src="/static/images/profilee.png" class="portrait-slide is-active"
-          alt="{{ .Portfolio.Profile.Name }} — portrait 1" aria-hidden="false" fetchpriority=high width="720"
-          height="900">
-        <img src="/static/images/portrait-classic.webp" class="portrait-slide"
-          alt="{{ .Portfolio.Profile.Name }} — portrait 2" aria-hidden="true" loading=lazy width="720" height="900">
-        <img src="/static/images/portrait-suit.webp" class="portrait-slide"
-          alt="{{ .Portfolio.Profile.Name }} — portrait 3" aria-hidden="true" loading=lazy width="720" height="900">
-        <img src="/static/images/portrait-casual.webp" class="portrait-slide"
-          alt="{{ .Portfolio.Profile.Name }} — portrait 4" aria-hidden="true" loading=lazy width="720" height="900">
-        <img src="/static/images/portrait-relaxed.webp" class="portrait-slide"
-          alt="{{ .Portfolio.Profile.Name }} — portrait 5" aria-hidden="true" loading=lazy width="720" height="900">
-      </div>
-      {{ if .Portfolio.Skills }}
-      <div class="portrait-card skill-card"><span class="card-eyebrow">IN MY TOOLKIT</span><strong
-          id="spotlight-skill">{{ (index .Portfolio.Skills 0).Name }}</strong><span id="spotlight-category">{{ (index
-          .Portfolio.Skills 0).Category }}</span></div>
-      <div hidden id="carousel-skills">{{ range .Portfolio.Skills }}<span data-name="{{ .Name }}"
-          data-category="{{ .Category }}"></span>{{ end }}</div>
-      {{ end }}
-      <div class="portrait-card info-card"><span class="card-symbol" aria-hidden="true">&lt;/&gt;</span><span><span
-            class="card-eyebrow">BASED IN</span><strong>{{ .Portfolio.Profile.Location }}</strong></span></div>
-      <div class="portrait-caption"><span>{{ .Portfolio.Profile.Title }}</span></div>
-      <div class="portrait-controls"><span id="portrait-count" aria-live="off">01 / 05</span>
-        <div class="portrait-dots" aria-label="Choose a portrait"><button type="button" class="portrait-dot active"
-            aria-label="Show portrait 1" aria-pressed="true"></button><button type="button" class="portrait-dot"
-            aria-label="Show portrait 2" aria-pressed="false"></button><button type="button" class="portrait-dot"
-            aria-label="Show portrait 3" aria-pressed="false"></button><button type="button" class="portrait-dot"
-            aria-label="Show portrait 4" aria-pressed="false"></button><button type="button" class="portrait-dot"
-            aria-label="Show portrait 5" aria-pressed="false"></button></div><button type="button" id="portrait-pause"
-          aria-label="Pause portrait rotation" aria-pressed="false">Pause</button>
-      </div>
-    </div>
-  </section>
-  <div class="home-divider container"><span>BUILDING WITH PURPOSE</span><a href="#projects">Explore my work ↓</a></div>
-  {{ template "client-view" . }}
+<section id="hero" class="home-hero container" aria-labelledby="home-title">
+  <div class="home-intro">
+    <p class="home-eyebrow">SOFTWARE ENGINEERING &amp; CYBERSECURITY</p>
+    <h1 id="home-title">Thoughtful code.<br><span>Real-world impact.</span></h1>
+    <p class="home-name">Hi, I'm {{ .Portfolio.Profile.Name }}.</p>
+    <p class="home-summary">{{ .Portfolio.Profile.Bio }}</p>
+    <div class="home-actions"><a href="/developer" class="home-button primary">Developer View <span aria-hidden="true">↗</span></a><a href="/resume" download class="home-button">Download Résumé <span aria-hidden="true">↓</span></a></div>
+    <p class="home-availability"><span aria-hidden="true"></span>{{ .Portfolio.Profile.Availability }}</p>
+  </div>
+  <div class="portrait-showcase" role="region" aria-roledescription="carousel" aria-label="Portraits and skills">
+    <div class="portrait-decoration" aria-hidden="true"></div>
+    <div class="portrait-frame"><img src="/static/images/profilee.png" class="portrait-slide is-active" alt="{{ .Portfolio.Profile.Name }} — portrait 1" aria-hidden="false" fetchpriority=high width="720" height="900">
+<img src="/static/images/portrait-classic.webp" class="portrait-slide" alt="{{ .Portfolio.Profile.Name }} — portrait 2" aria-hidden="true" loading=lazy width="720" height="900">
+<img src="/static/images/portrait-suit.webp" class="portrait-slide" alt="{{ .Portfolio.Profile.Name }} — portrait 3" aria-hidden="true" loading=lazy width="720" height="900">
+<img src="/static/images/portrait-casual.webp" class="portrait-slide" alt="{{ .Portfolio.Profile.Name }} — portrait 4" aria-hidden="true" loading=lazy width="720" height="900">
+<img src="/static/images/portrait-relaxed.webp" class="portrait-slide" alt="{{ .Portfolio.Profile.Name }} — portrait 5" aria-hidden="true" loading=lazy width="720" height="900"></div>
+    {{ if .Portfolio.Skills }}
+    <div class="portrait-card skill-card"><span class="card-eyebrow">IN MY TOOLKIT</span><strong id="spotlight-skill">{{ (index .Portfolio.Skills 0).Name }}</strong><span id="spotlight-category">{{ (index .Portfolio.Skills 0).Category }}</span></div>
+    <div hidden id="carousel-skills">{{ range .Portfolio.Skills }}<span data-name="{{ .Name }}" data-category="{{ .Category }}"></span>{{ end }}</div>
+    {{ end }}
+    <div class="portrait-card info-card"><span class="card-symbol" aria-hidden="true">&lt;/&gt;</span><span><span class="card-eyebrow">BASED IN</span><strong>{{ .Portfolio.Profile.Location }}</strong></span></div>
+    <div class="portrait-caption"><span>{{ .Portfolio.Profile.Title }}</span></div>
+    <div class="portrait-controls"><span id="portrait-count" aria-live="off">01 / 05</span><div class="portrait-dots" aria-label="Choose a portrait"><button type="button" class="portrait-dot active" aria-label="Show portrait 1" aria-pressed="true"></button><button type="button" class="portrait-dot" aria-label="Show portrait 2" aria-pressed="false"></button><button type="button" class="portrait-dot" aria-label="Show portrait 3" aria-pressed="false"></button><button type="button" class="portrait-dot" aria-label="Show portrait 4" aria-pressed="false"></button><button type="button" class="portrait-dot" aria-label="Show portrait 5" aria-pressed="false"></button></div><button type="button" id="portrait-pause" aria-label="Pause portrait rotation" aria-pressed="false">Pause</button></div>
+  </div>
+</section>
+<div class="home-divider container"><span>BUILDING WITH PURPOSE</span><a href="#projects">Explore my work ↓</a></div>
+{{ template "client-view" . }}
 </main>
 <script src="/static/js/particles.js" defer></script>
 <script src="/static/js/home.js" defer></script>

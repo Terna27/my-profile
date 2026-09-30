@@ -42,3 +42,13 @@ Homepage sections now use opaque teal, blue, and warm sand color bands with cont
 The developer page now uses wrapping navigation buttons, shrinkable grid/flex columns, wrapping code and long text, stacked cards, two-column mobile statistics, full-width contact buttons, and viewport-sized portrait dialogs. At mobile widths the duplicate icon rail and explorer are hidden, while all seven sections remain accessible in the tab grid. Social links are also available in Contact. The editor uses the dynamic viewport height to accommodate mobile browser controls.
 
 JavaScript syntax and diff whitespace checks passed. A browser runtime is still unavailable here; verify the page on a real mobile device after rebuilding.
+
+## Resume and developer photo update
+
+The bundled `uploads/resume/resume.pdf` is now the exact PDF supplied with this update. Both homepage and developer download buttons use `/resume`.
+
+The developer portrait uses the same five-photo sequence, five-second interval, crossfade, subtle zoom, manual selection, pause controls, and reduced-motion behavior as the homepage. The latest supplied casual portrait replaces the previous casual photo in both views. Expanding the developer portrait opens the currently active photo.
+
+Copy the updated `uploads/resume/resume.pdf` as well as the source when applying this update. If hosting uses a persistent uploads disk, replace the resume through your admin dashboard too, since a persistent disk may override files bundled with a deployment.
+
+This update passed JavaScript syntax checks, template photo-sequence checks, and an exact-byte comparison of the resume. Browser and Go runtime checks were not available.

@@ -115,7 +115,7 @@
         
         <!-- ================= PERMANENT PINNED HOME BLOCK ================= -->
         <section class="pinned-home-pane" id="pinned-home">
-          <div class="code-comment glow-typewriter" data-text="// Hi, I'm a Developer">// Hi, I'm a Web Application Developer</div>
+          <div class="code-comment glow-typewriter" data-text="// Hi, I'm a Developer">// Hi, I'm a Developer</div>
           <h1 class="pane-headline">Welcome to my portfolio</h1>
           <div class="component-tag">&lt;Portfolio /&gt;</div>
 
@@ -142,24 +142,26 @@
   <span class="syn-key">Passion</span>:      <span class="syn-str">"Building high-performance distributed web systems"</span>,
   <span class="syn-key">Availability</span>: <span class="syn-str">"{{ .Portfolio.Profile.Availability }}"</span>,
 }</code></pre>
-              <a href="/resume" class="download-cv-btn">Download CV 📥</a>
+              <a href="/resume" download class="download-cv-btn">Download CV 📥</a>
             </div>
 
-            <!-- Right Side: Portrait Image Frame (Clickable Lightbox Trigger) -->
-            <div class="dev-portrait-card" onclick="openDevModal('{{ if .Portfolio.Profile.ProfileImage }}{{ .Portfolio.Profile.ProfileImage }}{{ else }}/static/images/profile.png{{ end }}', '{{ .Portfolio.Profile.Name }}', '{{ .Portfolio.Profile.Title }}')">
-              <div class="portrait-image-wrapper">
-                <img
-                  src="{{ if .Portfolio.Profile.ProfileImage }}{{ .Portfolio.Profile.ProfileImage }}{{ else }}/static/images/profile.png{{ end }}"
-                  alt="{{ .Portfolio.Profile.Name }}"
-                  class="dev-avatar-img"
-                  onerror="this.onerror=null; this.src='/static/images/portrait-casual.webp';"
-                />
+            <!-- Shared portrait rotation and controls, matching the homepage. -->
+            <div class="dev-portrait-card portrait-showcase" role="region" aria-roledescription="carousel" aria-label="Portraits">
+              <div class="portrait-image-wrapper" role="button" tabindex="0" aria-label="Expand current portrait"
+                onclick="openDevModal(this.querySelector('.is-active').src, '{{ .Portfolio.Profile.Name }}', '{{ .Portfolio.Profile.Title }}')"
+                onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); this.click(); }">
+                <img src="/static/images/profilee.png" class="portrait-slide is-active" alt="{{ .Portfolio.Profile.Name }} — portrait 1" aria-hidden="false" fetchpriority=high width="720" height="900">
+<img src="/static/images/portrait-classic.webp" class="portrait-slide" alt="{{ .Portfolio.Profile.Name }} — portrait 2" aria-hidden="true" loading=lazy width="720" height="900">
+<img src="/static/images/portrait-suit.webp" class="portrait-slide" alt="{{ .Portfolio.Profile.Name }} — portrait 3" aria-hidden="true" loading=lazy width="720" height="900">
+<img src="/static/images/portrait-casual.webp" class="portrait-slide" alt="{{ .Portfolio.Profile.Name }} — portrait 4" aria-hidden="true" loading=lazy width="720" height="900">
+<img src="/static/images/portrait-relaxed.webp" class="portrait-slide" alt="{{ .Portfolio.Profile.Name }} — portrait 5" aria-hidden="true" loading=lazy width="720" height="900">
                 <div class="portrait-zoom-hint">🔍 Expand</div>
                 <div class="portrait-overlay-badge">
                   <h4 class="portrait-name">{{ .Portfolio.Profile.Name }}</h4>
                   <p class="portrait-role">{{ .Portfolio.Profile.Title }}</p>
                 </div>
               </div>
+              <div class="portrait-controls"><span id="portrait-count" aria-live="off">01 / 05</span><div class="portrait-dots" aria-label="Choose a portrait"><button type="button" class="portrait-dot active" aria-label="Show portrait 1" aria-pressed="true"></button><button type="button" class="portrait-dot" aria-label="Show portrait 2" aria-pressed="false"></button><button type="button" class="portrait-dot" aria-label="Show portrait 3" aria-pressed="false"></button><button type="button" class="portrait-dot" aria-label="Show portrait 4" aria-pressed="false"></button><button type="button" class="portrait-dot" aria-label="Show portrait 5" aria-pressed="false"></button></div><button type="button" id="portrait-pause" aria-label="Pause portrait rotation" aria-pressed="false">Pause</button></div>
             </div>
           </div>
 
