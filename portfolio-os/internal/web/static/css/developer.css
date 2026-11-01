@@ -457,8 +457,9 @@ body {
 /* ---------------- Section Divider & Subpanes ---------------- */
 .ide-section-divider {
   border: none;
-  height: 1px;
-  background: var(--border-color);
+  height: 2px;
+  background: var(--cyan-accent);
+  box-shadow: 0 0 8px rgba(127, 219, 202, 0.35);
   margin: 32px 0 28px;
 }
 

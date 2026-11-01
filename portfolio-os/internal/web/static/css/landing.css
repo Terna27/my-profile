@@ -13,6 +13,9 @@
   --mint-hover: #2dd4bf;
   --mint-glow: rgba(94, 234, 212, 0.18);
   --mint-tint: rgba(94, 234, 212, 0.08);
+  --section-divider-color: #5eead4;
+  --section-divider-glow: rgba(94, 234, 212, 0.25);
+  --section-divider: 2px solid var(--section-divider-color);
   --header-height: 76px;
 }
 
@@ -551,7 +554,8 @@ main, .site-header {
   justify-content: space-between;
   align-items: center;
   gap: 20px;
-  border-top: 1px solid var(--card-border);
+  border-top: var(--section-divider);
+  box-shadow: 0 -1px 8px var(--section-divider-glow);
   padding-top: 24px;
   padding-bottom: 24px;
   color: var(--text-subtle);
@@ -580,7 +584,8 @@ main, .site-header {
 .certificates-section,
 .footer-wrapper {
   background: var(--bg-surface);
-  border-top: 1px solid var(--card-border);
+  border-top: var(--section-divider);
+  box-shadow: 0 -1px 8px var(--section-divider-glow);
   padding-block: 84px;
 }
 
@@ -1197,7 +1202,8 @@ main, .site-header {
    ========================================================================== */
 .badges-section {
   background: var(--bg-surface);
-  border-top: 1px solid var(--card-border);
+  border-top: var(--section-divider);
+  box-shadow: 0 -1px 8px var(--section-divider-glow);
   padding-block: 84px;
 }
 
@@ -1613,7 +1619,8 @@ html.has-reveal .scroll-reveal.is-revealed {
    ========================================================================== */
 .footer-wrapper {
   background: var(--bg-dark);
-  border-top: 1px solid var(--card-border);
+  border-top: var(--section-divider);
+  box-shadow: 0 -1px 8px var(--section-divider-glow);
   padding-bottom: 40px;
 }
 

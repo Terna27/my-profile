@@ -13,6 +13,9 @@
     --text-main: #f8fafc;
     --text-muted: #94a3b8;
     --accent-glow: rgba(94, 234, 212, 0.15);
+    --section-divider-color: #5eead4;
+    --section-divider-glow: rgba(94, 234, 212, 0.25);
+    --section-divider: 2px solid var(--section-divider-color);
 }
 
 /* --------------------------------------------------------------------------
@@ -330,7 +333,8 @@ html, body {
 
 .about-section {
     padding: 90px 0;
-    border-top: 1px solid var(--card-border);
+    border-top: var(--section-divider);
+    box-shadow: 0 -1px 8px var(--section-divider-glow);
 }
 
 .about-grid {
@@ -402,7 +406,8 @@ html, body {
 
 .skills-section {
     padding: 90px 0;
-    border-top: 1px solid var(--card-border);
+    border-top: var(--section-divider);
+    box-shadow: 0 -1px 8px var(--section-divider-glow);
 }
 
 .section-center-head {
@@ -533,7 +538,8 @@ html, body {
 
 .projects-section {
     padding: 90px 0;
-    border-top: 1px solid var(--card-border);
+    border-top: var(--section-divider);
+    box-shadow: 0 -1px 8px var(--section-divider-glow);
 }
 
 .projects-grid-3 {
@@ -626,6 +632,8 @@ html, body {
 .certificates-section {
   position: relative;
   overflow: hidden;
+  border-top: var(--section-divider);
+  box-shadow: 0 -1px 8px var(--section-divider-glow);
 }
 
 .certificates-particles-canvas {
@@ -841,7 +849,8 @@ html, body {
    -------------------------------------------------------------------------- */
 .badges-section {
   background: var(--bg-surface, #070c18);
-  border-top: 1px solid var(--card-border);
+  border-top: var(--section-divider);
+  box-shadow: 0 -1px 8px var(--section-divider-glow);
   padding-block: 84px;
 }
 
@@ -1304,7 +1313,8 @@ html.has-reveal .scroll-reveal.is-revealed {
 
 .footer-wrapper {
     padding: 90px 0 30px;
-    border-top: 1px solid var(--card-border);
+    border-top: var(--section-divider);
+    box-shadow: 0 -1px 8px var(--section-divider-glow);
     background: #04060e;
 }
 
