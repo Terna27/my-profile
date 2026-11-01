@@ -16,6 +16,20 @@
   --section-divider-color: #5eead4;
   --section-divider-glow: rgba(94, 234, 212, 0.25);
   --section-divider: 2px solid var(--section-divider-color);
+  --divider-cyan: #38bdf8;
+  --divider-cyan-glow: rgba(56, 189, 248, 0.32);
+  --divider-orange: #fb923c;
+  --divider-orange-glow: rgba(251, 146, 60, 0.35);
+  --divider-teal: #2dd4bf;
+  --divider-teal-glow: rgba(45, 212, 191, 0.32);
+  --divider-purple: #c084fc;
+  --divider-purple-glow: rgba(192, 132, 252, 0.32);
+  --divider-mint: #5eead4;
+  --divider-mint-glow: rgba(94, 234, 212, 0.32);
+  --divider-pink: #f472b6;
+  --divider-pink-glow: rgba(244, 114, 182, 0.35);
+  --divider-amber: #fbbf24;
+  --divider-amber-glow: rgba(251, 191, 36, 0.32);
   --header-height: 76px;
 }
 
@@ -554,8 +568,8 @@ main, .site-header {
   justify-content: space-between;
   align-items: center;
   gap: 20px;
-  border-top: var(--section-divider);
-  box-shadow: 0 -1px 8px var(--section-divider-glow);
+  border-top: 2px solid var(--divider-cyan);
+  box-shadow: 0 -1px 8px var(--divider-cyan-glow);
   padding-top: 24px;
   padding-bottom: 24px;
   color: var(--text-subtle);
@@ -584,8 +598,6 @@ main, .site-header {
 .certificates-section,
 .footer-wrapper {
   background: var(--bg-surface);
-  border-top: var(--section-divider);
-  box-shadow: 0 -1px 8px var(--section-divider-glow);
   padding-block: 84px;
 }
 
@@ -593,6 +605,27 @@ main, .site-header {
 .skills-section,
 .certificates-section {
   background: var(--bg-dark);
+}
+
+/* Distinct Bright Colored Section Dividers (Orange, Pink, Teal, Purple, Mint, Amber) */
+.about-section {
+  border-top: 2px solid var(--divider-orange);
+  box-shadow: 0 -1px 8px var(--divider-orange-glow);
+}
+
+.skills-section {
+  border-top: 2px solid var(--divider-teal);
+  box-shadow: 0 -1px 8px var(--divider-teal-glow);
+}
+
+.projects-section {
+  border-top: 2px solid var(--divider-purple);
+  box-shadow: 0 -1px 8px var(--divider-purple-glow);
+}
+
+.certificates-section {
+  border-top: 2px solid var(--divider-mint);
+  box-shadow: 0 -1px 8px var(--divider-mint-glow);
 }
 
 .section-center-head {
@@ -630,6 +663,42 @@ main, .site-header {
   letter-spacing: 1.4px;
   text-transform: uppercase;
   margin-bottom: 8px;
+}
+
+.about-section .pill-badge {
+  color: var(--divider-orange);
+  border-color: rgba(251, 146, 60, 0.35);
+  background: rgba(251, 146, 60, 0.08);
+}
+
+.skills-section .pill-badge {
+  color: var(--divider-teal);
+  border-color: rgba(45, 212, 191, 0.35);
+  background: rgba(45, 212, 191, 0.08);
+}
+
+.projects-section .pill-badge {
+  color: var(--divider-purple);
+  border-color: rgba(192, 132, 252, 0.35);
+  background: rgba(192, 132, 252, 0.08);
+}
+
+.certificates-section .pill-badge {
+  color: var(--divider-mint);
+  border-color: rgba(94, 234, 212, 0.35);
+  background: rgba(94, 234, 212, 0.08);
+}
+
+.badges-section .pill-badge {
+  color: var(--divider-pink);
+  border-color: rgba(244, 114, 182, 0.35);
+  background: rgba(244, 114, 182, 0.08);
+}
+
+.footer-wrapper .pill-badge {
+  color: var(--divider-amber);
+  border-color: rgba(251, 191, 36, 0.35);
+  background: rgba(251, 191, 36, 0.08);
 }
 
 /* About Grid */
@@ -1202,8 +1271,8 @@ main, .site-header {
    ========================================================================== */
 .badges-section {
   background: var(--bg-surface);
-  border-top: var(--section-divider);
-  box-shadow: 0 -1px 8px var(--section-divider-glow);
+  border-top: 2px solid var(--divider-pink);
+  box-shadow: 0 -1px 8px var(--divider-pink-glow);
   padding-block: 84px;
 }
 
@@ -1619,8 +1688,8 @@ html.has-reveal .scroll-reveal.is-revealed {
    ========================================================================== */
 .footer-wrapper {
   background: var(--bg-dark);
-  border-top: var(--section-divider);
-  box-shadow: 0 -1px 8px var(--section-divider-glow);
+  border-top: 2px solid var(--divider-amber);
+  box-shadow: 0 -1px 8px var(--divider-amber-glow);
   padding-bottom: 40px;
 }
 

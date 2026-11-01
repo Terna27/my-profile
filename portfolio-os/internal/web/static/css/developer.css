@@ -458,8 +458,8 @@ body {
 .ide-section-divider {
   border: none;
   height: 2px;
-  background: var(--cyan-accent);
-  box-shadow: 0 0 8px rgba(127, 219, 202, 0.35);
+  background: linear-gradient(90deg, #38bdf8 0%, #5eead4 25%, #f472b6 60%, #fb923c 100%);
+  box-shadow: 0 0 10px rgba(94, 234, 212, 0.3), 0 0 10px rgba(244, 114, 182, 0.25);
   margin: 32px 0 28px;
 }
 
