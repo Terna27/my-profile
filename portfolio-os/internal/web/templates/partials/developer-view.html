@@ -322,76 +322,144 @@
             </div>
           </section>
 
-          <!-- 6. CERTIFICATES PANE -->
+          <!-- 6. CERTIFICATES PANE (Compact Horizontal Rows) -->
           <section class="tab-content" id="pane-certificates" role="tabpanel">
             <div class="code-comment glow-typewriter" data-text="// Verified Credentials">// Verified Credentials</div>
             <h2 class="subpane-headline">Certifications &amp; Licenses</h2>
             
-            <div class="ide-cert-grid">
-              {{ range .Portfolio.Certificates }}
-              <div class="ide-cert-card">
-                <div class="ide-cert-img-box">
-                  {{ if and .Image (not (isCloudinary .Image)) }}
+            <div class="ide-cert-rows-list" role="list">
+              {{ range $index, $cert := .Portfolio.Certificates }}
+              <article
+                class="ide-cert-row-item scroll-reveal"
+                style="--stagger-index: {{ $index }};"
+                role="listitem"
+                data-credential-type="Certificate"
+                data-title="{{ $cert.Title }}"
+                data-issuer="{{ $cert.Issuer }}"
+                data-date="{{ $cert.IssueDate }}"
+                data-id="{{ $cert.CredentialID }}"
+                data-desc="{{ $cert.Description }}"
+                data-image="{{ $cert.Image }}"
+                data-verify="{{ $cert.VerificationURL }}"
+              >
+                <!-- Left: Complete Thumbnail without cropping -->
+                <button
+                  type="button"
+                  class="ide-cert-thumb-btn"
+                  aria-label="View {{ $cert.Title }} certificate details"
+                  data-open-credential
+                >
+                  {{ if and $cert.Image (not (isCloudinary $cert.Image)) }}
                   <img
-                    src="{{ .Image }}"
-                    alt="{{ .Title }}"
+                    src="{{ $cert.Image }}"
+                    alt="{{ $cert.Title }}"
+                    class="ide-cert-thumb-img"
                     loading="lazy"
                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                   />
-                  {{ end }}
-                  <div class="ide-cert-fallback" {{ if and .Image (not (isCloudinary .Image)) }}style="display:none;"{{ end }}>
-                    <span aria-hidden="true">📜</span>
-                    <small>Verified Credential</small>
+                  <div class="ide-cert-thumb-fallback" style="display:none;" aria-hidden="true">
+                    <span>📜</span>
                   </div>
-                </div>
-                <div class="ide-cert-details">
-                  <span class="cert-org">{{ .Issuer }}</span>
-                  <h4>{{ .Title }}</h4>
-                  {{ if .IssueDate }}<span class="cert-date">Issued: {{ .IssueDate }}</span>{{ end }}
-                  {{ if .Description }}<p>{{ .Description }}</p>{{ end }}
-                  {{ if .VerificationURL }}
-                  <a href="{{ .VerificationURL }}" target="_blank" rel="noopener noreferrer" class="cert-verify-link">Verify Credential ↗</a>
+                  {{ else }}
+                  <div class="ide-cert-thumb-fallback" aria-hidden="true">
+                    <span>📜</span>
+                  </div>
+                  {{ end }}
+                  <span class="ide-zoom-hint" aria-hidden="true">🔍</span>
+                </button>
+
+                <!-- Middle: Title, Issuer, Date -->
+                <div class="ide-cert-info">
+                  <span class="ide-cert-issuer">{{ $cert.Issuer }}</span>
+                  <h3 class="ide-cert-title">{{ $cert.Title }}</h3>
+                  {{ if $cert.IssueDate }}
+                  <span class="ide-cert-date">
+                    <span aria-hidden="true">📅</span>
+                    Issued {{ $cert.IssueDate }}
+                  </span>
                   {{ end }}
                 </div>
-              </div>
+
+                <!-- Right: Clear Actions -->
+                <div class="ide-cert-actions">
+                  <button
+                    type="button"
+                    class="ide-btn-action ide-preview-btn"
+                    data-open-credential
+                    aria-label="View {{ $cert.Title }} details"
+                  >
+                    <span aria-hidden="true">👁️</span>
+                    <span>View certificate</span>
+                  </button>
+
+                  {{ if $cert.VerificationURL }}
+                  <a
+                    href="{{ $cert.VerificationURL }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="ide-btn-action ide-verify-link"
+                    aria-label="Verify {{ $cert.Title }} on issuer website (opens in new tab)"
+                  >
+                    <span>Verify credential</span>
+                    <span aria-hidden="true">↗</span>
+                  </a>
+                  {{ end }}
+                </div>
+              </article>
               {{ end }}
             </div>
           </section>
 
-          <!-- BADGES PANE -->
+          <!-- BADGES PANE (Open Badge Gallery) -->
           {{ if .Portfolio.Badges }}
           <section class="tab-content" id="pane-badges" role="tabpanel">
             <div class="code-comment glow-typewriter" data-text="// Achievements &amp; Badges">// Achievements &amp; Badges</div>
             <h2 class="subpane-headline">Public Achievements &amp; Badges</h2>
             
-            <div class="ide-badges-grid">
-              {{ range .Portfolio.Badges }}
-              <div class="ide-badge-card">
-                <div class="ide-badge-img-box">
-                  {{ if .ImageURL }}
+            <div class="ide-badge-gallery-grid" role="list">
+              {{ range $index, $badge := .Portfolio.Badges }}
+              <button
+                type="button"
+                class="ide-badge-gallery-item scroll-reveal"
+                style="--stagger-index: {{ $index }};"
+                role="listitem"
+                data-credential-type="Achievement Badge"
+                data-title="{{ $badge.Title }}"
+                data-issuer="{{ $badge.Issuer }}"
+                data-date="{{ $badge.DateEarned }}"
+                data-id="{{ $badge.CredentialID }}"
+                data-desc="{{ $badge.Description }}"
+                data-image="{{ $badge.ImageURL }}"
+                data-verify="{{ $badge.VerificationURL }}"
+                data-open-credential
+                aria-label="View badge: {{ $badge.Title }} by {{ $badge.Issuer }}"
+              >
+                <!-- Badge Artwork Canvas -->
+                <div class="ide-badge-artwork-canvas">
+                  {{ if $badge.ImageURL }}
                   <img
-                    src="{{ .ImageURL }}"
-                    alt="{{ .Title }} — {{ .Issuer }}"
+                    src="{{ $badge.ImageURL }}"
+                    alt="{{ $badge.Title }} — {{ $badge.Issuer }}"
+                    class="ide-badge-artwork-img"
                     loading="lazy"
                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                   />
-                  {{ end }}
-                  <div class="ide-badge-fallback" {{ if .ImageURL }}style="display:none;"{{ end }}>
-                    <span aria-hidden="true">🎖️</span>
-                    <small>Verified Badge</small>
+                  <div class="ide-badge-artwork-fallback" style="display:none;" aria-hidden="true">
+                    <span>🎖️</span>
                   </div>
-                </div>
-                <div class="ide-badge-details">
-                  <span class="badge-org">{{ .Issuer }}</span>
-                  <h4>{{ .Title }}</h4>
-                  {{ if .DateEarned }}<span class="badge-date">Earned: {{ .DateEarned }}</span>{{ end }}
-                  {{ if .CredentialID }}<span class="badge-id">ID: {{ .CredentialID }}</span>{{ end }}
-                  {{ if .Description }}<p>{{ .Description }}</p>{{ end }}
-                  {{ if .VerificationURL }}
-                  <a href="{{ .VerificationURL }}" target="_blank" rel="noopener noreferrer" class="badge-verify-link">Verify credential ↗</a>
+                  {{ else }}
+                  <div class="ide-badge-artwork-fallback" aria-hidden="true">
+                    <span>🎖️</span>
+                  </div>
                   {{ end }}
                 </div>
-              </div>
+
+                <!-- Metadata Underneath -->
+                <div class="ide-badge-gallery-meta">
+                  <h3 class="ide-badge-gallery-title">{{ $badge.Title }}</h3>
+                  <p class="ide-badge-gallery-issuer">{{ $badge.Issuer }}</p>
+                </div>
+              </button>
               {{ end }}
             </div>
           </section>
@@ -461,5 +529,7 @@
       </div>
     </div>
   </div>
+
+  {{ template "credential-modal" . }}
 </div>
 {{ end }}
