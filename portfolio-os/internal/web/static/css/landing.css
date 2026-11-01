@@ -1212,6 +1212,178 @@ main, .site-header {
 }
 
 /* ==========================================================================
+   Achievements & Badges Section
+   ========================================================================== */
+.badges-section {
+  background: var(--bg-surface);
+  border-top: 1px solid var(--card-border);
+  padding-block: 84px;
+}
+
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 28px;
+}
+
+.badge-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.badge-card:hover {
+  border-color: rgba(94, 234, 212, 0.4);
+  transform: translateY(-4px);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45), 0 0 20px rgba(94, 234, 212, 0.1);
+}
+
+.badge-img-frame {
+  width: 130px;
+  height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 18px;
+  position: relative;
+  background: transparent;
+}
+
+.badge-img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  background: transparent;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.5));
+  transition: transform 0.25s ease;
+}
+
+.badge-card:hover .badge-img {
+  transform: scale(1.05);
+}
+
+.badge-img-fallback {
+  width: 100px;
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(11, 18, 36, 0.8);
+  border: 2px dashed rgba(94, 234, 212, 0.3);
+  color: var(--primary-mint);
+  font-size: 32px;
+}
+
+.badge-fallback-text {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  text-align: center;
+}
+
+.badge-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  flex: 1;
+}
+
+.badge-issuer {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--primary-mint);
+  margin-bottom: 6px;
+}
+
+.badge-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 8px;
+  line-height: 1.35;
+}
+
+.badge-earned-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.badge-description {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin: 0 0 16px;
+}
+
+.badge-footer {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.badge-verify-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary-mint);
+  padding: 8px 18px;
+  background: rgba(94, 234, 212, 0.08);
+  border: 1px solid rgba(94, 234, 212, 0.25);
+  border-radius: 20px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.badge-verify-link:hover {
+  background: var(--primary-mint);
+  color: #070c18;
+  border-color: var(--primary-mint);
+  box-shadow: 0 0 14px var(--mint-glow);
+}
+
+.badge-id {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: monospace;
+}
+
+@media (max-width: 640px) {
+  .badges-grid {
+    grid-template-columns: 1fr;
+  }
+  .badge-card {
+    padding: 20px;
+  }
+  .badge-img-frame {
+    width: 110px;
+    height: 110px;
+  }
+}
+
+/* ==========================================================================
    Contact Section & Footer
    ========================================================================== */
 .footer-wrapper {

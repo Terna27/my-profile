@@ -54,6 +54,7 @@ type Portfolio struct {
 	Services     []ServiceOffering
 	Education    []EducationEntry
 	Certificates []Certificate
+	Badges       []Badge
 	Projects     []Project
 	Contact      ContactInfo
 	SocialLinks  []SocialLink
@@ -122,6 +123,21 @@ type Certificate struct {
 	UpdatedAt       int64  `json:"updated_at"`
 }
 
+type Badge struct {
+	ID              uint   `gorm:"primaryKey" json:"id"`
+	Title           string `gorm:"not null" json:"title"`
+	Issuer          string `gorm:"not null" json:"issuer"`
+	DateEarned      string `json:"date_earned"`
+	CredentialID    string `json:"credential_id"`
+	VerificationURL string `json:"verification_url"`
+	Description     string `gorm:"type:text" json:"description"`
+	ImageURL        string `gorm:"not null" json:"image_url"`
+	DisplayOrder    int    `gorm:"default:0" json:"display_order"`
+	IsPublished     bool   `json:"is_published"`
+	CreatedAt       int64  `json:"created_at"`
+	UpdatedAt       int64  `json:"updated_at"`
+}
+
 type Project struct {
 	ID           uint        `gorm:"primaryKey" json:"id"`
 	Name         string      `json:"name"`
@@ -169,6 +185,17 @@ type Photo struct {
 	DisplayOrder int    `gorm:"default:0" json:"display_order"`
 	CreatedAt    int64  `json:"created_at"`
 	UpdatedAt    int64  `json:"updated_at"`
+}
+
+// PublishedBadges returns only badges that have IsPublished set to true.
+func (p Portfolio) PublishedBadges() []Badge {
+	var published []Badge
+	for _, b := range p.Badges {
+		if b.IsPublished {
+			published = append(published, b)
+		}
+	}
+	return published
 }
 
 // SkillCategoryGroup groups skills into logical presentation buckets.

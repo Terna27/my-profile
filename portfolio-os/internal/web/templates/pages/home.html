@@ -17,6 +17,7 @@
       <a href="#skills" class="nav-anchor">Skills</a>
       <a href="#projects" class="nav-anchor">Projects</a>
       <a href="#certificates" class="nav-anchor">Credentials</a>
+      {{ if .Portfolio.Badges }}<a href="#badges" class="nav-anchor">Badges</a>{{ end }}
       <a href="#contact" class="nav-anchor">Contact</a>
       <a href="/developer" class="nav-action-pill">Developer View ↗</a>
     </nav>
@@ -36,6 +37,7 @@
       <a href="#skills" class="mobile-nav-link">Skills</a>
       <a href="#projects" class="mobile-nav-link">Projects</a>
       <a href="#certificates" class="mobile-nav-link">Credentials</a>
+      {{ if .Portfolio.Badges }}<a href="#badges" class="mobile-nav-link">Badges</a>{{ end }}
       <a href="#contact" class="mobile-nav-link">Contact</a>
       <div class="mobile-nav-actions">
         <a href="/developer" class="mobile-action-btn">Developer View ↗</a>

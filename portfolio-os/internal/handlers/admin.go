@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"errors"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -46,7 +48,7 @@ func NewAdminHandler(
 func (h *AdminHandler) Login(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		cookie, err := r.Cookie("admin_session")
-		if err == nil && cookie.Value != "" && cookie.Value == middleware.AdminSessionSecret() {
+		if err == nil && middleware.ValidateSessionCookie(cookie.Value) {
 			http.Redirect(w, r, "/admin", http.StatusSeeOther)
 			return
 		}
@@ -61,19 +63,18 @@ func (h *AdminHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	password := r.FormValue("password")
-	expectedPassword := middleware.AdminPasswordSecret()
-
-	if password == "" || password != expectedPassword {
+	if !middleware.ValidatePassword(password) {
 		http.Error(w, "invalid password", http.StatusUnauthorized)
 		return
 	}
 
+	isSecure := r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https"
 	http.SetCookie(w, &http.Cookie{
 		Name:     "admin_session",
 		Value:    middleware.AdminSessionSecret(),
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   r.TLS != nil,
+		Secure:   isSecure,
 		SameSite: http.SameSiteStrictMode,
 	})
 
@@ -87,7 +88,7 @@ func (h *AdminHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		MaxAge:   -1,
 		HttpOnly: true,
-		Secure:   r.TLS != nil,
+		Secure:   r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https",
 		SameSite: http.SameSiteStrictMode,
 	})
 
@@ -97,6 +98,7 @@ func (h *AdminHandler) Logout(w http.ResponseWriter, r *http.Request) {
 func (h *AdminHandler) Dashboard(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	currentPortfolio := h.PortfolioService.GetPortfolio()
+	currentPortfolio.Badges = h.PortfolioService.GetAllBadges()
 
 	var stats *services.AnalyticsStats
 	if h.AnalyticsService != nil {
@@ -496,6 +498,254 @@ func (h *AdminHandler) DeleteCertificate(w http.ResponseWriter, r *http.Request)
 	}
 
 	http.Redirect(w, r, "/admin#certificates", http.StatusSeeOther)
+}
+
+// validateVerificationURL verifies that a non-empty URL is a valid absolute HTTP or HTTPS URL.
+func validateVerificationURL(rawURL string) error {
+	trimmed := strings.TrimSpace(rawURL)
+	if trimmed == "" {
+		return nil
+	}
+	parsed, err := url.ParseRequestURI(trimmed)
+	if err != nil {
+		return errors.New("verification URL must be a valid URL")
+	}
+	scheme := strings.ToLower(parsed.Scheme)
+	if scheme != "http" && scheme != "https" {
+		return errors.New("verification URL must use http:// or https://")
+	}
+	if parsed.Host == "" {
+		return errors.New("verification URL must include a host")
+	}
+	return nil
+}
+
+// Badge Handlers
+
+func (h *AdminHandler) AddBadge(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	title := strings.TrimSpace(r.FormValue("title"))
+	issuer := strings.TrimSpace(r.FormValue("issuer"))
+	dateEarned := strings.TrimSpace(r.FormValue("date_earned"))
+	credentialID := strings.TrimSpace(r.FormValue("credential_id"))
+	verificationURL := strings.TrimSpace(r.FormValue("verification_url"))
+	description := strings.TrimSpace(r.FormValue("description"))
+	displayOrder, _ := strconv.Atoi(r.FormValue("display_order"))
+
+	isPublished := true
+	if r.FormValue("is_published") == "false" || r.FormValue("is_published") == "0" {
+		isPublished = false
+	}
+
+	if title == "" || issuer == "" {
+		http.Error(w, "title and issuer are required", http.StatusBadRequest)
+		return
+	}
+
+	if err := validateVerificationURL(verificationURL); err != nil {
+		http.Error(w, "invalid verification URL: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if h.StorageService == nil {
+		http.Error(w, "storage service is not configured", http.StatusInternalServerError)
+		return
+	}
+
+	imageURL, err := h.StorageService.SaveImage(r, "image", "badges")
+	if err != nil {
+		http.Error(w, "failed to upload badge image: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if imageURL == "" {
+		http.Error(w, "badge image is required", http.StatusBadRequest)
+		return
+	}
+
+	badge := models.Badge{
+		Title:           title,
+		Issuer:          issuer,
+		DateEarned:      dateEarned,
+		CredentialID:    credentialID,
+		VerificationURL: verificationURL,
+		Description:     description,
+		ImageURL:        imageURL,
+		DisplayOrder:    displayOrder,
+		IsPublished:     isPublished,
+	}
+
+	if err := h.PortfolioService.AddBadge(badge); err != nil {
+		_ = h.StorageService.SafeDeleteFile(imageURL, nil)
+		http.Error(w, "failed to add badge: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/admin#badges", http.StatusSeeOther)
+}
+
+func (h *AdminHandler) UpdateBadge(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	idParam := r.PathValue("id")
+	badgeID, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+		http.Error(w, "invalid badge ID", http.StatusBadRequest)
+		return
+	}
+
+	existingBadge, err := h.PortfolioService.GetBadgeByID(uint(badgeID))
+	if err != nil {
+		http.Error(w, "badge not found", http.StatusNotFound)
+		return
+	}
+
+	title := strings.TrimSpace(r.FormValue("title"))
+	issuer := strings.TrimSpace(r.FormValue("issuer"))
+	dateEarned := strings.TrimSpace(r.FormValue("date_earned"))
+	credentialID := strings.TrimSpace(r.FormValue("credential_id"))
+	verificationURL := strings.TrimSpace(r.FormValue("verification_url"))
+	description := strings.TrimSpace(r.FormValue("description"))
+	displayOrder, _ := strconv.Atoi(r.FormValue("display_order"))
+
+	isPublished := r.FormValue("is_published") == "true" || r.FormValue("is_published") == "on"
+
+	if title == "" || issuer == "" {
+		http.Error(w, "title and issuer are required", http.StatusBadRequest)
+		return
+	}
+
+	if err := validateVerificationURL(verificationURL); err != nil {
+		http.Error(w, "invalid verification URL: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	imageURL := existingBadge.ImageURL
+	var newImageURL string
+
+	if h.StorageService != nil {
+		uploaded, err := h.StorageService.SaveImage(r, "image", "badges")
+		if err != nil {
+			http.Error(w, "failed to upload replacement badge image: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+		if uploaded != "" {
+			newImageURL = uploaded
+			imageURL = uploaded
+		}
+	}
+
+	badge := models.Badge{
+		ID:              existingBadge.ID,
+		Title:           title,
+		Issuer:          issuer,
+		DateEarned:      dateEarned,
+		CredentialID:    credentialID,
+		VerificationURL: verificationURL,
+		Description:     description,
+		ImageURL:        imageURL,
+		DisplayOrder:    displayOrder,
+		IsPublished:     isPublished,
+	}
+
+	if err := h.PortfolioService.UpdateBadge(badge); err != nil {
+		if newImageURL != "" && h.StorageService != nil {
+			_ = h.StorageService.SafeDeleteFile(newImageURL, nil)
+		}
+		http.Error(w, "failed to update badge: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if newImageURL != "" && newImageURL != existingBadge.ImageURL && h.StorageService != nil {
+		_ = h.StorageService.SafeDeleteFile(existingBadge.ImageURL, h.PortfolioService.IsImageReferenced)
+	}
+
+	http.Redirect(w, r, "/admin#badges", http.StatusSeeOther)
+}
+
+func (h *AdminHandler) DeleteBadge(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	idParam := r.PathValue("id")
+	badgeID, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+		http.Error(w, "invalid badge ID", http.StatusBadRequest)
+		return
+	}
+
+	badgeToDelete, err := h.PortfolioService.GetBadgeByID(uint(badgeID))
+	if err != nil {
+		http.Error(w, "badge not found", http.StatusNotFound)
+		return
+	}
+
+	if err := h.PortfolioService.DeleteBadge(uint(badgeID)); err != nil {
+		http.Error(w, "failed to delete badge: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if h.StorageService != nil {
+		_ = h.StorageService.SafeDeleteFile(badgeToDelete.ImageURL, h.PortfolioService.IsImageReferenced)
+	}
+
+	http.Redirect(w, r, "/admin#badges", http.StatusSeeOther)
+}
+
+func (h *AdminHandler) ToggleBadgePublish(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	idParam := r.PathValue("id")
+	badgeID, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+		http.Error(w, "invalid badge ID", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.PortfolioService.ToggleBadgePublish(uint(badgeID)); err != nil {
+		http.Error(w, "failed to toggle badge visibility: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/admin#badges", http.StatusSeeOther)
+}
+
+func (h *AdminHandler) ReorderBadge(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	idParam := r.PathValue("id")
+	badgeID, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+		http.Error(w, "invalid badge ID", http.StatusBadRequest)
+		return
+	}
+
+	direction := r.URL.Query().Get("direction")
+	if direction == "" {
+		direction = r.FormValue("direction")
+	}
+
+	if err := h.PortfolioService.ReorderBadge(uint(badgeID), direction); err != nil {
+		http.Error(w, "failed to reorder badge: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/admin#badges", http.StatusSeeOther)
 }
 
 // Project Handlers

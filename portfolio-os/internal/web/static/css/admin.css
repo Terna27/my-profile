@@ -862,6 +862,154 @@ body.admin-app-body {
 }
 
 /* ==========================================================================
+   Badges Section Management
+   ========================================================================== */
+.badges-admin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.badge-editor-card {
+  background: rgba(7, 12, 24, 0.55);
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: border-color 0.2s ease;
+}
+
+.badge-editor-card:hover {
+  border-color: rgba(94, 234, 212, 0.3);
+}
+
+.badge-admin-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 14px;
+}
+
+.badge-thumb-box {
+  width: 84px;
+  height: 84px;
+  min-width: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(11, 18, 36, 0.7);
+  border: 1px solid rgba(94, 234, 212, 0.2);
+  border-radius: 12px;
+  padding: 6px;
+}
+
+.badge-admin-thumb {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+  background: transparent;
+}
+
+.badge-thumb-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+}
+
+.badge-admin-meta {
+  flex: 1;
+}
+
+.badge-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.badge-title-row h4 {
+  margin: 0;
+  font-size: 17px;
+  color: #ffffff;
+}
+
+.status-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.status-pill.published {
+  background: rgba(94, 234, 212, 0.15);
+  color: var(--admin-mint);
+  border: 1px solid rgba(94, 234, 212, 0.3);
+}
+
+.status-pill.hidden-status {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--admin-text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.badge-subline {
+  font-size: 13px;
+  color: var(--admin-text-muted);
+  margin: 4px 0;
+}
+
+.badge-id-tag {
+  display: inline-block;
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--admin-mint);
+  margin-top: 2px;
+}
+
+.badge-quick-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 14px;
+  background: rgba(11, 18, 36, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.badge-reorder-group {
+  display: flex;
+  gap: 8px;
+}
+
+.badge-preview-wrap {
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(11, 18, 36, 0.7);
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  padding: 6px;
+}
+
+.badge-preview-thumb {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* ==========================================================================
    Responsive Adaptations
    ========================================================================== */
 @media (max-width: 900px) {

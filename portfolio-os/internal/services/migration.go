@@ -19,6 +19,7 @@ func MigrateDatabase(db *gorm.DB) error {
 		&models.ServiceOffering{},
 		&models.EducationEntry{},
 		&models.Certificate{},
+		&models.Badge{},
 		&models.Project{},
 		&models.ContactInfo{},
 		&models.SocialLink{},

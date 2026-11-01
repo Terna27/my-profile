@@ -253,6 +253,73 @@
   </div>
   {{ end }}
 
+  <!-- Achievements & Badges Section -->
+  {{ if .Portfolio.Badges }}
+  <section id="badges" class="badges-section" aria-labelledby="badges-heading">
+    <div class="container">
+      <div class="section-center-head">
+        <span class="pill-badge">HONORS &amp; BADGES</span>
+        <h2 id="badges-heading">Achievements &amp; Badges</h2>
+        <p class="section-subtitle">Verified digital achievements and technical skill badges.</p>
+      </div>
+
+      <div class="badges-grid">
+        {{ range .Portfolio.Badges }}
+        <article class="badge-card">
+          <div class="badge-img-frame">
+            {{ if .ImageURL }}
+            <img
+              src="{{ .ImageURL }}"
+              alt="{{ .Title }} — {{ .Issuer }}"
+              class="badge-img"
+              loading="lazy"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+            />
+            {{ end }}
+            <div class="badge-img-fallback" {{ if .ImageURL }}style="display:none;"{{ end }}>
+              <span class="badge-fallback-glyph" aria-hidden="true">🎖️</span>
+              <span class="badge-fallback-text">{{ .Issuer }}</span>
+            </div>
+          </div>
+
+          <div class="badge-body">
+            <span class="badge-issuer">{{ .Issuer }}</span>
+            <h3 class="badge-title">{{ .Title }}</h3>
+
+            {{ if .DateEarned }}
+            <span class="badge-earned-date">
+              <span class="badge-date-icon" aria-hidden="true">📅</span>
+              Earned {{ .DateEarned }}
+            </span>
+            {{ end }}
+
+            {{ if .Description }}
+            <p class="badge-description">{{ .Description }}</p>
+            {{ end }}
+
+            <div class="badge-footer">
+              {{ if .VerificationURL }}
+              <a
+                href="{{ .VerificationURL }}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="badge-verify-link"
+              >
+                Verify credential <span aria-hidden="true">↗</span>
+              </a>
+              {{ end }}
+              {{ if .CredentialID }}
+              <span class="badge-id" title="Credential ID">ID: {{ .CredentialID }}</span>
+              {{ end }}
+            </div>
+          </div>
+        </article>
+        {{ end }}
+      </div>
+    </div>
+  </section>
+  {{ end }}
+
   <!-- Contact & Social Footer -->
   <footer id="contact" class="footer-wrapper" aria-labelledby="contact-heading">
     <div class="container footer-grid-3">

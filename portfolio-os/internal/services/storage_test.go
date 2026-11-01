@@ -45,7 +45,7 @@ func TestNewStorageService_DirectoryCreation(t *testing.T) {
 		t.Fatalf("NewStorageService failed: %v", err)
 	}
 
-	expectedSubdirs := []string{"projects", "certificates", "profile", "photos", "resume"}
+	expectedSubdirs := []string{"projects", "certificates", "profile", "photos", "resume", "badges"}
 	for _, sub := range expectedSubdirs {
 		dirPath := filepath.Join(storage.GetUploadDir(), sub)
 		info, err := os.Stat(dirPath)
@@ -100,6 +100,16 @@ func TestSaveImage_ValidRasterImages(t *testing.T) {
 	}
 	if !strings.HasPrefix(url, "/uploads/photos/") || !strings.HasSuffix(url, ".webp") {
 		t.Errorf("unexpected public URL for WebP: %s", url)
+	}
+
+	// 4. Valid Badge PNG
+	req = createMultipartRequest(t, "image", "badge.png", pngData)
+	url, err = storage.SaveImage(req, "image", "badges")
+	if err != nil {
+		t.Fatalf("SaveImage valid badge PNG failed: %v", err)
+	}
+	if !strings.HasPrefix(url, "/uploads/badges/") || !strings.HasSuffix(url, ".png") {
+		t.Errorf("unexpected public URL for badge PNG: %s", url)
 	}
 }
 

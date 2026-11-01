@@ -123,6 +123,21 @@ tar -czvf "portfolio_uploads_$(date +%Y%m%d_%H%M%S).tar.gz" -C /var/data uploads
 
 ---
 
+## Admin Password Reset & Session Invalidation
+
+The application authenticates the admin dashboard using the environment variables `ADMIN_PASSWORD` and `ADMIN_SESSION`.
+
+To securely reset the admin password and instantly terminate all existing admin sessions:
+
+1. Log into your hosting dashboard (e.g. [Render Dashboard](https://dashboard.render.com)).
+2. Select your portfolio Web Service and open the **Environment** tab.
+3. Locate `ADMIN_PASSWORD` and update it to your new strong passphrase.
+4. Locate `ADMIN_SESSION` and rotate it by generating a new random 32+ character string (e.g., using `openssl rand -hex 32`).
+5. Click **Save Changes**. Render will automatically restart the web service with the updated environment variables.
+6. **Session Invalidation Guarantee**: Because session cookies are verified against `ADMIN_SESSION` using constant-time comparison, rotating `ADMIN_SESSION` immediately invalidates any previously issued browser cookies, forcing all active sessions to log out.
+
+---
+
 ## Running Tests and Checks
 
 Run all unit and integration tests:

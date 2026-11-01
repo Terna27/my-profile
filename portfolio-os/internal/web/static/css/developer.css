@@ -719,6 +719,116 @@ body {
 .cert-date { font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 8px; }
 .cert-verify-link { font-size: 12px; color: var(--blue-accent); text-decoration: none; }
 
+/* ---------------- Achievement Badges ---------------- */
+.ide-badges-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.ide-badge-card {
+  background: #01111d;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 22px 18px;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.ide-badge-card:hover {
+  border-color: var(--cyan-accent);
+  transform: translateY(-2px);
+}
+
+.ide-badge-img-box {
+  width: 110px;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  background: transparent;
+}
+
+.ide-badge-img-box img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  background: transparent;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+}
+
+.ide-badge-fallback {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #070c18;
+  border: 1px dashed var(--cyan-accent);
+  font-size: 24px;
+  color: var(--cyan-accent);
+  gap: 4px;
+}
+
+.ide-badge-details {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ide-badge-details h4 {
+  margin: 4px 0 6px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.badge-org {
+  font-size: 12px;
+  color: var(--cyan-accent);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-date {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 6px;
+}
+
+.badge-id {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: monospace;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.badge-verify-link {
+  font-size: 12px;
+  color: var(--blue-accent);
+  text-decoration: none;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+.badge-verify-link:hover {
+  text-decoration: underline;
+  color: var(--cyan-accent);
+}
+
 /* ---------------- Developer Lightbox Modal (65vw Viewport) ---------------- */
 .dev-modal {
   display: none;
@@ -831,7 +941,7 @@ body {
   .sidebar-explorer { display: none; }
   .home-split-view { grid-template-columns: 1fr; }
   .dev-portrait-card { height: 340px; width: 100%; }
-  .ide-projects-grid, .ide-cert-grid { grid-template-columns: 1fr; }
+  .ide-projects-grid, .ide-cert-grid, .ide-badges-grid { grid-template-columns: 1fr; }
   .editor-viewport { padding: 20px; }
   .dev-modal-dialog { width: 92vw; max-height: 90vh; }
 }
@@ -911,7 +1021,7 @@ body {
 .download-cv-btn:focus-visible { outline: 2px solid var(--cyan-accent); outline-offset: -3px; }
 .home-split-view { grid-template-columns: minmax(0, 1fr) minmax(0, 25%); }
 .home-split-view > *, .ide-stats-row > *, .ide-projects-grid > *,
-.ide-cert-grid > *, .skills-ide-grid > *, .tab-content { min-width: 0; }
+.ide-cert-grid > *, .ide-badges-grid > *, .skills-ide-grid > *, .tab-content { min-width: 0; }
 .editor-viewport { overflow-wrap: anywhere; }
 .editor-viewport pre, .editor-viewport code {
   white-space: pre-wrap;
@@ -923,7 +1033,7 @@ body {
 .editor-viewport pre { min-width: 0; }
 .editor-viewport img { max-width: 100%; }
 .ide-stats-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.ide-projects-grid, .ide-cert-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ide-projects-grid, .ide-cert-grid, .ide-badges-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .edu-top, .meter-info, .ide-proj-actions, .editor-file-status {
   flex-wrap: wrap;
   gap: 8px;
@@ -943,7 +1053,7 @@ body {
 }
 @media (max-width: 900px) {
   .home-split-view { grid-template-columns: minmax(0, 1fr); }
-  .ide-projects-grid, .ide-cert-grid { grid-template-columns: minmax(0, 1fr); }
+  .ide-projects-grid, .ide-cert-grid, .ide-badges-grid { grid-template-columns: minmax(0, 1fr); }
   .dev-portrait-card { height: 340px; }
 }
 @media (max-width: 600px) {

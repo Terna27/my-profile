@@ -24,6 +24,9 @@
         <button type="button" class="activity-btn" data-tab="projects" title="Source Control &amp; Projects (Projects.go)" aria-label="Open Projects pane">🌿</button>
         <button type="button" class="activity-btn" data-tab="education" title="Academic Background (Education.go)" aria-label="Open Education pane">🎓</button>
         <button type="button" class="activity-btn" data-tab="certificates" title="Packages &amp; Certifications (Certificates.go)" aria-label="Open Certificates pane">📦</button>
+        {{ if .Portfolio.Badges }}
+        <button type="button" class="activity-btn" data-tab="badges" title="Achievements &amp; Badges (Badges.go)" aria-label="Open Badges pane">🎖️</button>
+        {{ end }}
       </div>
       <div class="activity-bottom">
         <button type="button" class="activity-btn" data-tab="contact" title="Settings &amp; Contact (Contact.go)" aria-label="Open Contact pane">⚙️</button>
@@ -59,6 +62,11 @@
           <li class="file-item" data-tab="certificates" tabindex="0">
             <span class="file-icon icon-go"></span> Certificates.go
           </li>
+          {{ if .Portfolio.Badges }}
+          <li class="file-item" data-tab="badges" tabindex="0">
+            <span class="file-icon icon-go"></span> Badges.go
+          </li>
+          {{ end }}
           <li class="file-item" data-tab="contact" tabindex="0">
             <span class="file-icon icon-go"></span> Contact.go
           </li>
@@ -105,6 +113,11 @@
         <button type="button" class="tab-item" data-tab="certificates" role="tab" aria-selected="false" aria-controls="pane-certificates">
           <span class="file-icon icon-go"></span> Certificates.go <span class="tab-close" aria-hidden="true">×</span>
         </button>
+        {{ if .Portfolio.Badges }}
+        <button type="button" class="tab-item" data-tab="badges" role="tab" aria-selected="false" aria-controls="pane-badges">
+          <span class="file-icon icon-go"></span> Badges.go <span class="tab-close" aria-hidden="true">×</span>
+        </button>
+        {{ end }}
         <button type="button" class="tab-item" data-tab="contact" role="tab" aria-selected="false" aria-controls="pane-contact">
           <span class="file-icon icon-go"></span> Contact.go <span class="tab-close" aria-hidden="true">×</span>
         </button>
@@ -344,6 +357,45 @@
               {{ end }}
             </div>
           </section>
+
+          <!-- BADGES PANE -->
+          {{ if .Portfolio.Badges }}
+          <section class="tab-content" id="pane-badges" role="tabpanel">
+            <div class="code-comment glow-typewriter" data-text="// Achievements &amp; Badges">// Achievements &amp; Badges</div>
+            <h2 class="subpane-headline">Public Achievements &amp; Badges</h2>
+            
+            <div class="ide-badges-grid">
+              {{ range .Portfolio.Badges }}
+              <div class="ide-badge-card">
+                <div class="ide-badge-img-box">
+                  {{ if .ImageURL }}
+                  <img
+                    src="{{ .ImageURL }}"
+                    alt="{{ .Title }} — {{ .Issuer }}"
+                    loading="lazy"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                  />
+                  {{ end }}
+                  <div class="ide-badge-fallback" {{ if .ImageURL }}style="display:none;"{{ end }}>
+                    <span aria-hidden="true">🎖️</span>
+                    <small>Verified Badge</small>
+                  </div>
+                </div>
+                <div class="ide-badge-details">
+                  <span class="badge-org">{{ .Issuer }}</span>
+                  <h4>{{ .Title }}</h4>
+                  {{ if .DateEarned }}<span class="badge-date">Earned: {{ .DateEarned }}</span>{{ end }}
+                  {{ if .CredentialID }}<span class="badge-id">ID: {{ .CredentialID }}</span>{{ end }}
+                  {{ if .Description }}<p>{{ .Description }}</p>{{ end }}
+                  {{ if .VerificationURL }}
+                  <a href="{{ .VerificationURL }}" target="_blank" rel="noopener noreferrer" class="badge-verify-link">Verify credential ↗</a>
+                  {{ end }}
+                </div>
+              </div>
+              {{ end }}
+            </div>
+          </section>
+          {{ end }}
 
           <!-- 7. CONTACT PANE -->
           <section class="tab-content" id="pane-contact" role="tabpanel">

@@ -59,6 +59,7 @@ func (s *StorageService) InitDirectories() error {
 		"profile",
 		"photos",
 		"resume",
+		"badges",
 	}
 
 	for _, sub := range subdirs {
@@ -115,6 +116,7 @@ func (s *StorageService) SaveImage(r *http.Request, formField string, folder str
 		"certificates": true,
 		"profile":      true,
 		"photos":       true,
+		"badges":       true,
 	}
 
 	if !validFolders[folder] {

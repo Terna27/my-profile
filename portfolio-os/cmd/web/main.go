@@ -204,6 +204,42 @@ func main() {
 		),
 	)
 
+	// Badges
+	mux.Handle(
+		"POST /admin/badges",
+		middleware.AdminAuth(
+			http.HandlerFunc(adminHandler.AddBadge),
+		),
+	)
+
+	mux.Handle(
+		"POST /admin/badges/{id}",
+		middleware.AdminAuth(
+			http.HandlerFunc(adminHandler.UpdateBadge),
+		),
+	)
+
+	mux.Handle(
+		"POST /admin/badges/{id}/delete",
+		middleware.AdminAuth(
+			http.HandlerFunc(adminHandler.DeleteBadge),
+		),
+	)
+
+	mux.Handle(
+		"POST /admin/badges/{id}/publish",
+		middleware.AdminAuth(
+			http.HandlerFunc(adminHandler.ToggleBadgePublish),
+		),
+	)
+
+	mux.Handle(
+		"POST /admin/badges/{id}/reorder",
+		middleware.AdminAuth(
+			http.HandlerFunc(adminHandler.ReorderBadge),
+		),
+	)
+
 	// Skills
 	mux.Handle(
 		"POST /admin/skills",

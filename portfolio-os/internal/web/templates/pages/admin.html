@@ -58,6 +58,10 @@
           <span class="nav-icon" aria-hidden="true">📜</span>
           <span class="nav-label">Certificates</span>
         </a>
+        <a href="#badges" class="nav-item" data-section="badges">
+          <span class="nav-icon" aria-hidden="true">🎖️</span>
+          <span class="nav-label">Badges</span>
+        </a>
         <a href="#resume" class="nav-item" data-section="resume">
           <span class="nav-icon" aria-hidden="true">📄</span>
           <span class="nav-label">Résumé</span>
@@ -118,6 +122,12 @@
               <span class="stat-label">Verified Credentials</span>
               <strong class="stat-number">{{ len .Portfolio.Certificates }}</strong>
               <small class="stat-sub">Certifications on record</small>
+            </article>
+
+            <article class="stat-card">
+              <span class="stat-label">Achievement Badges</span>
+              <strong class="stat-number">{{ len .Portfolio.Badges }}</strong>
+              <small class="stat-sub">Configured badges</small>
             </article>
 
             <article class="stat-card">
@@ -1008,7 +1018,225 @@
           </div>
         </section>
 
-        <!-- ================= 7. RÉSUMÉ SECTION ================= -->
+        <!-- ================= 7. BADGES SECTION ================= -->
+        <section id="badges" class="admin-tab-pane" aria-labelledby="badges-heading">
+          <div class="pane-header">
+            <h2 id="badges-heading">Achievement Badges</h2>
+            <p>Upload, organize, reorder, and publish digital achievement badges and credentials.</p>
+          </div>
+
+          <!-- Add Badge Form -->
+          <div class="admin-card">
+            <div class="card-header">
+              <h3>Add Badge</h3>
+              <p>Upload a badge artwork image (PNG, JPEG, WebP) and fill in credential details.</p>
+            </div>
+
+            <form method="POST" action="/admin/badges" enctype="multipart/form-data" class="admin-form">
+              <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}">
+              <div class="form-row">
+                <div class="form-group flex-2">
+                  <label for="badge-title">Badge Title <span class="required">*</span></label>
+                  <input type="text" id="badge-title" name="title" placeholder="e.g. Certified Cloud Security Practitioner" required>
+                </div>
+                <div class="form-group flex-1">
+                  <label for="badge-issuer">Issuing Organization <span class="required">*</span></label>
+                  <input type="text" id="badge-issuer" name="issuer" placeholder="e.g. Linux Foundation, Cisco, AWS" required>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label for="badge-date">Date Earned</label>
+                  <input type="text" id="badge-date" name="date_earned" placeholder="e.g. Oct 2026">
+                </div>
+                <div class="form-group flex-1">
+                  <label for="badge-id">Credential ID</label>
+                  <input type="text" id="badge-id" name="credential_id" placeholder="Optional identifier">
+                </div>
+                <div class="form-group flex-2">
+                  <label for="badge-vurl">Verification URL</label>
+                  <input type="url" id="badge-vurl" name="verification_url" placeholder="https://www.credly.com/badges/...">
+                  <small class="form-help">Must be an HTTP/HTTPS URL.</small>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group flex-2">
+                  <label for="badge-desc">Short Description</label>
+                  <textarea id="badge-desc" name="description" rows="2" placeholder="Brief competency or achievement summary..."></textarea>
+                </div>
+                <div class="form-group flex-1">
+                  <label for="badge-order">Display Order</label>
+                  <input type="number" id="badge-order" name="display_order" value="0" min="0" step="1">
+                  <small class="form-help">Lower values display first.</small>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="badge-img-file">Badge Image Artwork <span class="required">*</span></label>
+                <input
+                  type="file"
+                  id="badge-img-file"
+                  name="image"
+                  accept="image/jpeg,image/png,image/webp"
+                  onchange="previewImage(this, 'new-badge-preview')"
+                  required
+                >
+                <small class="form-help">PNG (recommended for transparency), JPEG, or WebP. Saved under <code>/uploads/badges/</code>. Max 10MB.</small>
+              </div>
+
+              <div class="preview-stage" id="new-badge-preview-box" style="display:none; margin-bottom: 16px;">
+                <label>Badge Image Preview</label>
+                <div class="badge-preview-wrap">
+                  <img id="new-badge-preview" src="" alt="Badge Preview" class="badge-preview-thumb">
+                </div>
+              </div>
+
+              <div class="form-group form-checkbox-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" name="is_published" value="true" checked>
+                  <span>Publish this badge immediately (uncheck to save as draft / hidden)</span>
+                </label>
+              </div>
+
+              <button type="submit" class="btn btn-primary">Add Badge</button>
+            </form>
+          </div>
+
+          <!-- Existing Badges List -->
+          <div class="admin-card">
+            <div class="card-header">
+              <h3>Existing Badges ({{ len .Portfolio.Badges }})</h3>
+              <p>Manage, edit, reorder, toggle public visibility, or delete badges.</p>
+            </div>
+
+            <div class="badges-admin-list">
+              {{ range $index, $b := .Portfolio.Badges }}
+              <div class="item-editor-card badge-editor-card">
+                <div class="badge-admin-header">
+                  <div class="badge-thumb-box">
+                    <img src="{{ $b.ImageURL }}" alt="{{ $b.Title }} — {{ $b.Issuer }}" class="badge-admin-thumb" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="badge-thumb-fallback" style="display:none;">
+                      <span aria-hidden="true">🎖️</span>
+                    </div>
+                  </div>
+                  <div class="badge-admin-meta">
+                    <div class="badge-title-row">
+                      <h4>{{ $b.Title }}</h4>
+                      {{ if $b.IsPublished }}
+                      <span class="status-pill published">● Published</span>
+                      {{ else }}
+                      <span class="status-pill hidden-status">○ Hidden</span>
+                      {{ end }}
+                    </div>
+                    <p class="badge-subline">{{ $b.Issuer }}{{ if $b.DateEarned }} · Earned: {{ $b.DateEarned }}{{ end }} · Order: <strong>{{ $b.DisplayOrder }}</strong></p>
+                    {{ if $b.CredentialID }}
+                    <span class="badge-id-tag">ID: {{ $b.CredentialID }}</span>
+                    {{ end }}
+                  </div>
+                </div>
+
+                <!-- Quick Control Toolbar: Reorder & Publish/Hide Toggle -->
+                <div class="badge-quick-toolbar">
+                  <form method="POST" action="/admin/badges/{{ $b.ID }}/publish" style="display:inline;">
+                    <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+                    <button type="submit" class="btn btn-sm {{ if $b.IsPublished }}btn-outline{{ else }}btn-primary{{ end }}">
+                      {{ if $b.IsPublished }}Hide Badge 👁️‍🗨️{{ else }}Publish Badge 👁️{{ end }}
+                    </button>
+                  </form>
+
+                  <div class="badge-reorder-group">
+                    <form method="POST" action="/admin/badges/{{ $b.ID }}/reorder?direction=up" style="display:inline;">
+                      <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+                      <button type="submit" class="btn btn-sm btn-icon" title="Move Up">↑ Move Up</button>
+                    </form>
+                    <form method="POST" action="/admin/badges/{{ $b.ID }}/reorder?direction=down" style="display:inline;">
+                      <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+                      <button type="submit" class="btn btn-sm btn-icon" title="Move Down">↓ Move Down</button>
+                    </form>
+                  </div>
+                </div>
+
+                <!-- Update Badge Form -->
+                <form method="POST" action="/admin/badges/{{ $b.ID }}" enctype="multipart/form-data" class="admin-form badge-edit-form">
+                  <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+                  <div class="form-row">
+                    <div class="form-group flex-2">
+                      <label>Title <span class="required">*</span></label>
+                      <input type="text" name="title" value="{{ $b.Title }}" required>
+                    </div>
+                    <div class="form-group flex-1">
+                      <label>Issuer <span class="required">*</span></label>
+                      <input type="text" name="issuer" value="{{ $b.Issuer }}" required>
+                    </div>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group flex-1">
+                      <label>Date Earned</label>
+                      <input type="text" name="date_earned" value="{{ $b.DateEarned }}">
+                    </div>
+                    <div class="form-group flex-1">
+                      <label>Credential ID</label>
+                      <input type="text" name="credential_id" value="{{ $b.CredentialID }}">
+                    </div>
+                    <div class="form-group flex-2">
+                      <label>Verification URL</label>
+                      <input type="url" name="verification_url" value="{{ $b.VerificationURL }}" placeholder="https://...">
+                    </div>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group flex-2">
+                      <label>Description</label>
+                      <textarea name="description" rows="2">{{ $b.Description }}</textarea>
+                    </div>
+                    <div class="form-group flex-1">
+                      <label>Display Order</label>
+                      <input type="number" name="display_order" value="{{ $b.DisplayOrder }}">
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Replace Badge Image</label>
+                    <input
+                      type="file"
+                      name="image"
+                      accept="image/jpeg,image/png,image/webp"
+                      onchange="previewImage(this, 'badge-replace-preview-{{ $b.ID }}')"
+                    >
+                    <small class="form-help">Leave empty to keep existing image. PNG/JPEG/WebP, max 10MB.</small>
+                    <div class="badge-preview-wrap" style="margin-top: 8px;">
+                      <img id="badge-replace-preview-{{ $b.ID }}" src="" alt="Replacement Preview" class="badge-preview-thumb" style="display:none;">
+                    </div>
+                  </div>
+
+                  <div class="form-group form-checkbox-group">
+                    <label class="checkbox-label">
+                      <input type="checkbox" name="is_published" value="true" {{ if $b.IsPublished }}checked{{ end }}>
+                      <span>Published publicly</span>
+                    </label>
+                  </div>
+
+                  <div class="item-actions">
+                    <button type="submit" class="btn btn-sm btn-outline">Save Changes</button>
+                  </div>
+                </form>
+
+                <form method="POST" action="/admin/badges/{{ $b.ID }}/delete" onsubmit="return confirm('Are you sure you want to delete this badge? This action cannot be undone.')">
+                  <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+                  <button type="submit" class="btn btn-sm btn-danger btn-block">Delete Badge</button>
+                </form>
+              </div>
+              {{ else }}
+              <p class="empty-state">No badges added yet. Add your first achievement badge above.</p>
+              {{ end }}
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= 8. RÉSUMÉ SECTION ================= -->
         <section id="resume" class="admin-tab-pane" aria-labelledby="resume-heading">
           <div class="pane-header">
             <h2 id="resume-heading">Résumé Management</h2>

@@ -34,6 +34,7 @@ func (s *PortfolioService) GetPortfolio() models.Portfolio {
 	s.db.Order("id ASC").Find(&portfolio.Services)
 	s.db.Order("id ASC").Find(&portfolio.Education)
 	s.db.Order("id ASC").Find(&portfolio.Certificates)
+	s.db.Where("is_published = ?", true).Order("display_order ASC, id ASC").Find(&portfolio.Badges)
 	s.db.Order("id ASC").Find(&portfolio.Projects)
 	s.db.First(&portfolio.Contact)
 	s.db.Order("id ASC").Find(&portfolio.SocialLinks)
@@ -138,6 +139,106 @@ func (s *PortfolioService) DeleteCertificate(index int) error {
 	}
 
 	return s.db.Delete(&models.Certificate{}, id).Error
+}
+
+// Badges
+
+func (s *PortfolioService) GetAllBadges() []models.Badge {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	var badges []models.Badge
+	s.db.Order("display_order ASC, id ASC").Find(&badges)
+	return badges
+}
+
+func (s *PortfolioService) GetBadgeByID(id uint) (*models.Badge, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	var badge models.Badge
+	if err := s.db.First(&badge, id).Error; err != nil {
+		return nil, err
+	}
+	return &badge, nil
+}
+
+func (s *PortfolioService) AddBadge(badge models.Badge) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	return s.db.Create(&badge).Error
+}
+
+func (s *PortfolioService) UpdateBadge(badge models.Badge) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	return s.db.Save(&badge).Error
+}
+
+func (s *PortfolioService) DeleteBadge(id uint) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	return s.db.Delete(&models.Badge{}, id).Error
+}
+
+func (s *PortfolioService) ToggleBadgePublish(id uint) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	var badge models.Badge
+	if err := s.db.First(&badge, id).Error; err != nil {
+		return err
+	}
+
+	badge.IsPublished = !badge.IsPublished
+	return s.db.Model(&badge).Update("is_published", badge.IsPublished).Error
+}
+
+func (s *PortfolioService) ReorderBadge(id uint, direction string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	var badges []models.Badge
+	if err := s.db.Order("display_order ASC, id ASC").Find(&badges).Error; err != nil {
+		return err
+	}
+
+	targetIndex := -1
+	for i, b := range badges {
+		if b.ID == id {
+			targetIndex = i
+			break
+		}
+	}
+
+	if targetIndex == -1 {
+		return errors.New("badge not found")
+	}
+
+	swapWith := -1
+	if direction == "up" && targetIndex > 0 {
+		swapWith = targetIndex - 1
+	} else if direction == "down" && targetIndex < len(badges)-1 {
+		swapWith = targetIndex + 1
+	}
+
+	if swapWith != -1 {
+		for i := range badges {
+			badges[i].DisplayOrder = (i + 1) * 10
+		}
+		badges[targetIndex].DisplayOrder, badges[swapWith].DisplayOrder = badges[swapWith].DisplayOrder, badges[targetIndex].DisplayOrder
+
+		for _, b := range badges {
+			if err := s.db.Model(&models.Badge{}).Where("id = ?", b.ID).Update("display_order", b.DisplayOrder).Error; err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 // Skills
@@ -388,6 +489,10 @@ func (s *PortfolioService) IsImageReferenced(imageURL string) bool {
 		return true
 	}
 	s.db.Model(&models.Certificate{}).Where("image = ?", imageURL).Count(&count)
+	if count > 0 {
+		return true
+	}
+	s.db.Model(&models.Badge{}).Where("image_url = ?", imageURL).Count(&count)
 	if count > 0 {
 		return true
 	}
