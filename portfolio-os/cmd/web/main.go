@@ -8,6 +8,7 @@ import (
 
 	"portfolio-os/internal/handlers"
 	"portfolio-os/internal/middleware"
+	"portfolio-os/internal/models"
 	"portfolio-os/internal/renderer"
 	"portfolio-os/internal/services"
 	"portfolio-os/internal/web"
@@ -32,7 +33,11 @@ func main() {
 	}
 
 	staticHandler := http.FileServer(http.FS(staticFS))
-	uploadsHandler := http.FileServer(http.Dir("uploads"))
+
+	storageService, err := services.NewStorageService(os.Getenv("UPLOAD_DIR"))
+	if err != nil {
+		log.Fatalf("Failed to initialize storage service: %v", err)
+	}
 
 	// 2. Database
 	db, err := services.NewDatabase()
@@ -42,6 +47,22 @@ func main() {
 
 	if err := services.MigrateDatabase(db); err != nil {
 		log.Fatal(err)
+	}
+
+	// Seed portfolio data if database is fresh
+	var profileCount int64
+	db.Model(&models.Profile{}).Count(&profileCount)
+	if profileCount == 0 {
+		log.Println("Database is empty, seeding from data/portfolio.json...")
+		if err := services.MigratePortfolioData(db, "data/portfolio.json"); err != nil {
+			log.Printf("Warning: failed to seed portfolio data: %v", err)
+		} else {
+			log.Println("Successfully seeded portfolio data")
+		}
+	}
+
+	if err := services.VerifyPortfolioData(db); err != nil {
+		log.Printf("Database verification notice: %v", err)
 	}
 
 	// 3. Renderer
@@ -59,15 +80,11 @@ func main() {
 	// 5. Handlers
 	analyticsHandler := handlers.NewAnalyticsHandler(analyticsService)
 
-	cloudinaryService, err := services.NewCloudinaryService()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	adminHandler := handlers.NewAdminHandler(
 		pageRenderer,
 		portfolioService,
-		cloudinaryService,
+		storageService,
+		analyticsService,
 	)
 
 	homeHandler := handlers.NewHomeHandler(
@@ -84,9 +101,19 @@ func main() {
 		http.StripPrefix("/static/", staticHandler),
 	)
 
+	// Route /images/ requests to static images (e.g. /images/mypage.png)
+	mux.Handle(
+		"GET /images/",
+		http.StripPrefix("/images/", http.FileServer(http.FS(func() fs.FS {
+			sub, _ := fs.Sub(staticFS, "images")
+			return sub
+		}()))),
+	)
+
+	// Local Uploads Handler
 	mux.Handle(
 		"GET /uploads/",
-		http.StripPrefix("/uploads/", uploadsHandler),
+		http.StripPrefix("/uploads/", storageService.FileServerHandler()),
 	)
 
 	// Page Views
@@ -121,28 +148,7 @@ func main() {
 	mux.Handle(
 		"GET /admin",
 		middleware.AdminAuth(
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.Header().Set(
-					"Content-Type",
-					"text/html; charset=utf-8",
-				)
-
-				if err := pageRenderer.Render(
-					w,
-					"admin",
-					portfolioService.GetPortfolio(),
-				); err != nil {
-					log.Printf("admin render error: %v", err)
-
-					http.Error(
-						w,
-						"Failed to render admin page",
-						http.StatusInternalServerError,
-					)
-
-					return
-				}
-			}),
+			http.HandlerFunc(adminHandler.Dashboard),
 		),
 	)
 
@@ -151,6 +157,28 @@ func main() {
 		"POST /admin/profile",
 		middleware.AdminAuth(
 			http.HandlerFunc(adminHandler.UpdateProfile),
+		),
+	)
+
+	// Photos (Slideshow)
+	mux.Handle(
+		"POST /admin/photos",
+		middleware.AdminAuth(
+			http.HandlerFunc(adminHandler.AddPhoto),
+		),
+	)
+
+	mux.Handle(
+		"POST /admin/photos/{index}",
+		middleware.AdminAuth(
+			http.HandlerFunc(adminHandler.UpdatePhoto),
+		),
+	)
+
+	mux.Handle(
+		"POST /admin/photos/{index}/delete",
+		middleware.AdminAuth(
+			http.HandlerFunc(adminHandler.DeletePhoto),
 		),
 	)
 
@@ -328,15 +356,16 @@ func main() {
 		"GET /resume",
 		http.HandlerFunc(adminHandler.DownloadResume),
 	)
+	mux.Handle(
+		"HEAD /resume",
+		http.HandlerFunc(adminHandler.DownloadResume),
+	)
 
-	// 7. Start Server
+	// 7. Start Server with CSRF protection enabled
+	handler := middleware.CSRF(mux)
+
 	log.Printf("Server starting on port %s...", port)
-
-	if err := http.ListenAndServe(
-		"0.0.0.0:"+port,
-		mux,
-	); err != nil {
+	if err := http.ListenAndServe("0.0.0.0:"+port, handler); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}
-
 }

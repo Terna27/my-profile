@@ -22,6 +22,7 @@ func MigrateDatabase(db *gorm.DB) error {
 		&models.Project{},
 		&models.ContactInfo{},
 		&models.SocialLink{},
+		&models.Photo{},
 	)
 
 	if err != nil {
@@ -31,5 +32,4 @@ func MigrateDatabase(db *gorm.DB) error {
 	log.Println("Database migrations completed successfully")
 
 	return nil
-
 }

@@ -1,1160 +1,1207 @@
 {{ define "admin" }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — Portfolio OS</title>
+  <link rel="stylesheet" href="/static/css/admin.css" />
+</head>
+<body class="admin-app-body">
+  <div class="admin-layout">
 
-<link rel="stylesheet" href="/static/css/admin.css" />
-
-<section class="admin-page">
-  <header class="admin-header">
-    <div>
-      <p class="admin-eyebrow">ADMIN</p>
-      <h1>Analytics</h1>
-      <p>Portfolio traffic and visitor activity.</p>
-    </div>
-
-    <a href="/admin/logout" class="admin-logout">Logout</a>
-  </header>
-
-  <!-- Analytics Statistics -->
-  <section class="analytics-stats">
-    <article class="stat-card">
-      <span>Total Visits</span>
-      <strong id="total-visits">0</strong>
-    </article>
-
-    <article class="stat-card">
-      <span>Unique Visitors</span>
-      <strong id="unique-visitors">0</strong>
-    </article>
-
-    <article class="stat-card">
-      <span>Average Duration</span>
-      <strong id="average-duration">0 sec</strong>
-    </article>
-  </section>
-
-  <!-- Resume Management -->
-  <section class="analytics-card admin-section">
-    <header>
-      <h2>Resume</h2>
-      <p>Upload and securely download your current resume.</p>
+    <!-- Mobile Top Header -->
+    <header class="admin-mobile-bar">
+      <div class="admin-brand">
+        <span class="brand-glyph" aria-hidden="true">&lt;/&gt;</span>
+        <span class="brand-text">Portfolio OS</span>
+      </div>
+      <button type="button" class="admin-menu-toggle" id="admin-menu-toggle" aria-label="Toggle admin navigation menu" aria-expanded="false">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
     </header>
 
-    <form method="POST" action="/admin/resume" enctype="multipart/form-data">
-      <div class="admin-form-group">
-        <label for="resume">Resume PDF</label>
-        <input
-          type="file"
-          id="resume"
-          name="resume"
-          accept="application/pdf"
-          required
-        />
+    <!-- Sidebar Navigation -->
+    <aside class="admin-sidebar" id="admin-sidebar">
+      <div class="sidebar-header">
+        <div class="admin-brand">
+          <span class="brand-glyph" aria-hidden="true">&lt;/&gt;</span>
+          <span class="brand-text">Portfolio OS</span>
+        </div>
+        <span class="admin-badge">Admin</span>
       </div>
 
-      <button type="submit">Upload Resume</button>
-    </form>
+      <nav class="sidebar-nav" aria-label="Dashboard sections">
+        <a href="#overview" class="nav-item active" data-section="overview">
+          <span class="nav-icon" aria-hidden="true">📊</span>
+          <span class="nav-label">Overview</span>
+        </a>
+        <a href="#profile" class="nav-item" data-section="profile">
+          <span class="nav-icon" aria-hidden="true">👤</span>
+          <span class="nav-label">Profile &amp; Bio</span>
+        </a>
+        <a href="#photos" class="nav-item" data-section="photos">
+          <span class="nav-icon" aria-hidden="true">📸</span>
+          <span class="nav-label">Photos &amp; Slideshow</span>
+        </a>
+        <a href="#projects" class="nav-item" data-section="projects">
+          <span class="nav-icon" aria-hidden="true">💼</span>
+          <span class="nav-label">Projects</span>
+        </a>
+        <a href="#skills" class="nav-item" data-section="skills">
+          <span class="nav-icon" aria-hidden="true">⚡</span>
+          <span class="nav-label">Skills</span>
+        </a>
+        <a href="#certificates" class="nav-item" data-section="certificates">
+          <span class="nav-icon" aria-hidden="true">📜</span>
+          <span class="nav-label">Certificates</span>
+        </a>
+        <a href="#resume" class="nav-item" data-section="resume">
+          <span class="nav-icon" aria-hidden="true">📄</span>
+          <span class="nav-label">Résumé</span>
+        </a>
+        <a href="#analytics" class="nav-item" data-section="analytics">
+          <span class="nav-icon" aria-hidden="true">📈</span>
+          <span class="nav-label">Analytics</span>
+        </a>
+      </nav>
 
-    <div class="admin-form-group">
-      <a href="/resume">Download Current Resume</a>
-    </div>
-  </section>
-
-  <!-- Profile Management -->
-  <section class="analytics-card admin-section">
-    <header>
-      <h2>Profile</h2>
-      <p>Update the information displayed on your portfolio.</p>
-    </header>
-
-    <form method="POST" action="/admin/profile">
-      <div class="admin-form-group">
-        <label for="name">Name</label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          value="{{ .Profile.Name }}"
-          required
-        />
+      <div class="sidebar-footer">
+        <a href="/" target="_blank" rel="noopener" class="sidebar-action-link">
+          <span aria-hidden="true">🌐</span> View Public Site ↗
+        </a>
+        <a href="/admin/logout" class="sidebar-action-link logout">
+          <span aria-hidden="true">🚪</span> Sign Out
+        </a>
       </div>
+    </aside>
 
-      <div class="admin-form-group">
-        <label for="title">Professional Title</label>
-        <input
-          type="text"
-          id="title"
-          name="title"
-          value="{{ .Profile.Title }}"
-          required
-        />
-      </div>
+    <!-- Main Content Stage -->
+    <main class="admin-main">
+      <header class="stage-topbar">
+        <div>
+          <span class="topbar-crumb">System Management</span>
+          <h1 id="active-section-title">Overview</h1>
+        </div>
+        <div class="topbar-user">
+          <span class="user-status-dot" aria-hidden="true"></span>
+          <span class="user-name">Signed in as Admin</span>
+        </div>
+      </header>
 
-      <div class="admin-form-group">
-        <label for="bio">Bio</label>
-        <textarea id="bio" name="bio" rows="6" required>{{ .Profile.Bio }}</textarea>
-      </div>
+      <div class="stage-content">
 
-      <div class="admin-form-group">
-        <label for="location">Location</label>
-        <input
-          type="text"
-          id="location"
-          name="location"
-          value="{{ .Profile.Location }}"
-        />
-      </div>
-
-      <div class="admin-form-group">
-        <label for="profile_image">Profile Image</label>
-        <input
-          type="text"
-          id="profile_image"
-          name="profile_image"
-          value="{{ .Profile.ProfileImage }}"
-        />
-      </div>
-
-      <div class="admin-form-group">
-        <label for="availability">Availability</label>
-        <input
-          type="text"
-          id="availability"
-          name="availability"
-          value="{{ .Profile.Availability }}"
-        />
-      </div>
-
-      <button type="submit">Save Profile</button>
-    </form>
-  </section>
-
-  <!-- Statistics Management -->
-  <section class="analytics-card admin-section">
-    <header>
-      <h2>Statistics</h2>
-      <p>
-        Add, update, or remove the highlight statistics shown on your
-        portfolio.
-      </p>
-    </header>
-
-    <form method="POST" action="/admin/statistics">
-      <h3>Add Statistic</h3>
-
-      <div class="admin-form-group">
-        <label for="statistic-label">Label</label>
-        <input
-          type="text"
-          id="statistic-label"
-          name="label"
-          placeholder="e.g. Projects"
-          required
-        />
-      </div>
-
-      <div class="admin-form-group">
-        <label for="statistic-value">Value</label>
-        <input
-          type="text"
-          id="statistic-value"
-          name="value"
-          placeholder="e.g. 10+"
-          required
-        />
-      </div>
-
-      <button type="submit">Add Statistic</button>
-    </form>
-
-    <div class="existing-statistics">
-      <h3>Existing Statistics</h3>
-
-      {{ range $index, $statistic := .Statistics }}
-
-      <div class="statistic-editor">
-        <form method="POST" action="/admin/statistics/{{ $index }}">
-          <h4>Statistic {{ $index }}</h4>
-
-          <div class="admin-form-group">
-            <label>Label</label>
-            <input
-              type="text"
-              name="label"
-              value="{{ $statistic.Label }}"
-              required
-            />
+        <!-- ================= 1. OVERVIEW SECTION ================= -->
+        <section id="overview" class="admin-tab-pane active" aria-labelledby="overview-heading">
+          <div class="pane-header">
+            <h2 id="overview-heading">System Overview</h2>
+            <p>Live metrics, portfolio content volume, and visitor traffic summaries.</p>
           </div>
 
-          <div class="admin-form-group">
-            <label>Value</label>
-            <input
-              type="text"
-              name="value"
-              value="{{ $statistic.Value }}"
-              required
-            />
+          <!-- Real Stored Data Metric Cards -->
+          <div class="overview-stats-grid">
+            <article class="stat-card">
+              <span class="stat-label">Published Projects</span>
+              <strong class="stat-number">{{ len .Portfolio.Projects }}</strong>
+              <small class="stat-sub">Active portfolio items</small>
+            </article>
+
+            <article class="stat-card">
+              <span class="stat-label">Skills in Stack</span>
+              <strong class="stat-number">{{ len .Portfolio.Skills }}</strong>
+              <small class="stat-sub">Across categorized domains</small>
+            </article>
+
+            <article class="stat-card">
+              <span class="stat-label">Verified Credentials</span>
+              <strong class="stat-number">{{ len .Portfolio.Certificates }}</strong>
+              <small class="stat-sub">Certifications on record</small>
+            </article>
+
+            <article class="stat-card">
+              <span class="stat-label">Slideshow Portraits</span>
+              <strong class="stat-number">{{ len .Portfolio.Photos }}</strong>
+              <small class="stat-sub">Hero carousel images</small>
+            </article>
+
+            <article class="stat-card highlight">
+              <span class="stat-label">Total Visits</span>
+              <strong class="stat-number" id="total-visits">{{ if .Stats }}{{ .Stats.TotalVisits }}{{ else }}0{{ end }}</strong>
+              <small class="stat-sub">Recorded sessions</small>
+            </article>
+
+            <article class="stat-card highlight">
+              <span class="stat-label">Unique Visitors</span>
+              <strong class="stat-number" id="unique-visitors">{{ if .Stats }}{{ .Stats.UniqueVisitors }}{{ else }}0{{ end }}</strong>
+              <small class="stat-sub">Unique IP addresses</small>
+            </article>
+
+            <article class="stat-card highlight">
+              <span class="stat-label">Avg. Engagement</span>
+              <strong class="stat-number" id="average-duration">{{ if .Stats }}{{ .Stats.AverageDurationText }}{{ else }}0 sec{{ end }}</strong>
+              <small class="stat-sub">Time per session</small>
+            </article>
           </div>
 
-          <button type="submit">Update Statistic</button>
-        </form>
-
-        <form
-          method="POST"
-          action="/admin/statistics/{{ $index }}/delete"
-          onsubmit="return confirm('Delete this statistic?')"
-        >
-          <button type="submit" class="admin-delete">Delete</button>
-        </form>
-      </div>
-
-      {{ else }}
-
-      <p>No statistics added yet.</p>
-
-      {{ end }}
-    </div>
-  </section>
-
-  <!-- Skills Management -->
-  <section class="analytics-card admin-section">
-    <header>
-      <h2>Skills</h2>
-      <p>Add, update, or remove the skills shown on your portfolio.</p>
-    </header>
-
-    <form method="POST" action="/admin/skills">
-      <h3>Add Skill</h3>
-
-      <div class="admin-form-group">
-        <label for="skill-name">Name</label>
-        <input type="text" id="skill-name" name="name" required />
-      </div>
-
-      <div class="admin-form-group">
-        <label for="skill-category">Category</label>
-        <input
-          type="text"
-          id="skill-category"
-          name="category"
-          placeholder="e.g. Backend"
-        />
-      </div>
-
-      <div class="admin-form-group">
-     
-      </div>
-
-      <button type="submit">Add Skill</button>
-    </form>
-
-    <div class="existing-skills">
-      <h3>Existing Skills</h3>
-
-      {{ range $index, $skill := .Skills }}
-
-      <div class="skill-editor">
-        <form method="POST" action="/admin/skills/{{ $index }}">
-          <h4>Skill {{ $index }}</h4>
-
-          <div class="admin-form-group">
-            <label>Name</label>
-            <input
-              type="text"
-              name="name"
-              value="{{ $skill.Name }}"
-              required
-            />
-          </div>
-
-          <div class="admin-form-group">
-            <label>Category</label>
-            <input
-              type="text"
-              name="category"
-              value="{{ $skill.Category }}"
-            />
-          </div>
-
-          <div class="admin-form-group">
-        
-          </div>
-
-          <button type="submit">Update Skill</button>
-        </form>
-
-        <form
-          method="POST"
-          action="/admin/skills/{{ $index }}/delete"
-          onsubmit="return confirm('Delete this skill?')"
-        >
-          <button type="submit" class="admin-delete">Delete</button>
-        </form>
-      </div>
-
-      {{ else }}
-
-      <p>No skills added yet.</p>
-
-      {{ end }}
-    </div>
-  </section>
-
-  <!-- Services Management -->
-  <section class="analytics-card admin-section">
-    <header>
-      <h2>Services</h2>
-      <p>Add, update, or remove the services shown on your portfolio.</p>
-    </header>
-
-    <form method="POST" action="/admin/services">
-      <h3>Add Service</h3>
-
-      <div class="admin-form-group">
-        <label for="service-title">Title</label>
-        <input type="text" id="service-title" name="title" required />
-      </div>
-
-      <div class="admin-form-group">
-        <label for="service-description">Description</label>
-        <textarea
-          id="service-description"
-          name="description"
-          rows="5"
-          required
-        ></textarea>
-      </div>
-
-      <div class="admin-form-group">
-        <label for="service-icon">Icon</label>
-        <input
-          type="text"
-          id="service-icon"
-          name="icon"
-          placeholder="e.g. code"
-        />
-      </div>
-
-      <button type="submit">Add Service</button>
-    </form>
-
-    <div class="existing-services">
-      <h3>Existing Services</h3>
-
-      {{ range $index, $service := .Services }}
-
-      <div class="service-editor">
-        <form method="POST" action="/admin/services/{{ $index }}">
-          <h4>Service {{ $index }}</h4>
-
-          <div class="admin-form-group">
-            <label>Title</label>
-            <input
-              type="text"
-              name="title"
-              value="{{ $service.Title }}"
-              required
-            />
-          </div>
-
-          <div class="admin-form-group">
-            <label>Description</label>
-            <textarea
-              name="description"
-              rows="5"
-              required
-            >{{ $service.Description }}</textarea>
-          </div>
-
-          <div class="admin-form-group">
-            <label>Icon</label>
-            <input
-              type="text"
-              name="icon"
-              value="{{ $service.Icon }}"
-            />
-          </div>
-
-          <button type="submit">Update Service</button>
-        </form>
-
-        <form
-          method="POST"
-          action="/admin/services/{{ $index }}/delete"
-          onsubmit="return confirm('Delete this service?')"
-        >
-          <button type="submit" class="admin-delete">Delete</button>
-        </form>
-      </div>
-
-      {{ else }}
-
-      <p>No services added yet.</p>
-
-      {{ end }}
-    </div>
-  </section>
-
-  <!-- Education Management -->
-  <section class="analytics-card admin-section">
-    <header>
-      <h2>Education</h2>
-      <p>Add, update, or remove your education history.</p>
-    </header>
-
-    <form method="POST" action="/admin/education">
-      <h3>Add Education</h3>
-
-      <div class="admin-form-group">
-        <label for="education-institution">Institution</label>
-        <input
-          type="text"
-          id="education-institution"
-          name="institution"
-          required
-        />
-      </div>
-
-      <div class="admin-form-group">
-        <label for="education-degree">Degree</label>
-        <input
-          type="text"
-          id="education-degree"
-          name="degree"
-          required
-        />
-      </div>
-
-      <div class="admin-form-group">
-        <label for="education-field">Field of Study</label>
-        <input
-          type="text"
-          id="education-field"
-          name="field"
-          placeholder="e.g. Computer Science"
-        />
-      </div>
-
-      <div class="admin-form-group">
-        <label for="education-start-year">Start Year</label>
-        <input
-          type="number"
-          id="education-start-year"
-          name="start_year"
-          min="1950"
-          max="2100"
-          placeholder="e.g. 2021"
-        />
-      </div>
-
-      <div class="admin-form-group">
-        <label for="education-end-year">End Year</label>
-        <input
-          type="number"
-          id="education-end-year"
-          name="end_year"
-          min="1950"
-          max="2100"
-          placeholder="Leave blank if ongoing"
-        />
-      </div>
-
-      <div class="admin-form-group">
-        <label for="education-description">Description</label>
-        <textarea
-          id="education-description"
-          name="description"
-          rows="5"
-        ></textarea>
-      </div>
-
-      <button type="submit">Add Education</button>
-    </form>
-
-    <div class="existing-education">
-      <h3>Existing Education</h3>
-
-      {{ range $index, $education := .Education }}
-
-      <div class="education-editor">
-        <form method="POST" action="/admin/education/{{ $index }}">
-          <h4>Education {{ $index }}</h4>
-
-          <div class="admin-form-group">
-            <label>Institution</label>
-            <input
-              type="text"
-              name="institution"
-              value="{{ $education.Institution }}"
-              required
-            />
-          </div>
-
-          <div class="admin-form-group">
-            <label>Degree</label>
-            <input
-              type="text"
-              name="degree"
-              value="{{ $education.Degree }}"
-              required
-            />
-          </div>
-
-          <div class="admin-form-group">
-            <label>Field of Study</label>
-            <input
-              type="text"
-              name="field"
-              value="{{ $education.Field }}"
-            />
-          </div>
-
-          <div class="admin-form-group">
-            <label>Start Year</label>
-            <input
-              type="number"
-              name="start_year"
-              min="1950"
-              max="2100"
-              {{ if $education.StartYear }}value="{{ $education.StartYear }}"{{ end }}
-            />
-          </div>
-
-          <div class="admin-form-group">
-            <label>End Year</label>
-            <input
-              type="number"
-              name="end_year"
-              min="1950"
-              max="2100"
-              placeholder="Leave blank if ongoing"
-              {{ if $education.EndYear }}value="{{ $education.EndYear }}"{{ end }}
-            />
-          </div>
-
-          <div class="admin-form-group">
-            <label>Description</label>
-            <textarea
-              name="description"
-              rows="5"
-            >{{ $education.Description }}</textarea>
-          </div>
-
-          <button type="submit">Update Education</button>
-        </form>
-
-        <form
-          method="POST"
-          action="/admin/education/{{ $index }}/delete"
-          onsubmit="return confirm('Delete this education entry?')"
-        >
-          <button type="submit" class="admin-delete">Delete</button>
-        </form>
-      </div>
-
-      {{ else }}
-
-      <p>No education entries added yet.</p>
-
-      {{ end }}
-    </div>
-  </section>
-
-  <!-- Projects Management -->
-  <section class="analytics-card admin-section">
-    <header>
-      <h2>Projects</h2>
-      <p>Add, update, or remove the projects shown on your portfolio.</p>
-    </header>
-
-    <!-- Add Project -->
-    <form
-      method="POST"
-      action="/admin/projects"
-      enctype="multipart/form-data"
-    >
-      <h3>Add Project</h3>
-
-      <div class="admin-form-group">
-        <label for="project-name">Name</label>
-        <input
-          type="text"
-          id="project-name"
-          name="name"
-          required
-        />
-      </div>
-
-      <div class="admin-form-group">
-        <label for="project-description">Description</label>
-        <textarea
-          id="project-description"
-          name="description"
-          rows="5"
-          required
-        ></textarea>
-      </div>
-
-      <div class="admin-form-group">
-        <label for="project-image">Project Image</label>
-        <input
-          type="file"
-          id="project-image"
-          name="image"
-          accept="image/jpeg,image/png,image/webp"
-        />
-        <small>
-          Upload a JPG, PNG, or WebP image. Maximum size: 10MB.
-        </small>
-      </div>
-
-      <div class="admin-form-group">
-        <label for="project-url">Project URL</label>
-        <input
-          type="url"
-          id="project-url"
-          name="url"
-          placeholder="https://example.com"
-        />
-      </div>
-
-      <div class="admin-form-group">
-        <label for="project-github">GitHub URL</label>
-        <input
-          type="url"
-          id="project-github"
-          name="github"
-          placeholder="https://github.com/username/project"
-        />
-      </div>
-
-      <div class="admin-form-group">
-        <label for="project-technologies">Technologies</label>
-        <input
-          type="text"
-          id="project-technologies"
-          name="technologies"
-          placeholder="Comma-separated, e.g. Go, Gin, MySQL, React"
-        />
-      </div>
-
-      <button type="submit">Add Project</button>
-    </form>
-
-    <!-- Existing Projects -->
-    <div class="existing-projects">
-      <h3>Existing Projects</h3>
-
-      {{ range $index, $project := .Projects }}
-
-      <div class="project-editor">
-        <form
-          method="POST"
-          action="/admin/projects/{{ $index }}"
-          enctype="multipart/form-data"
-        >
-          <h4>Project {{ $index }}</h4>
-
-          <div class="admin-form-group">
-            <label>Name</label>
-            <input
-              type="text"
-              name="name"
-              value="{{ $project.Name }}"
-              required
-            />
-          </div>
-
-          <div class="admin-form-group">
-            <label>Description</label>
-            <textarea
-              name="description"
-              rows="5"
-              required
-            >{{ $project.Description }}</textarea>
-          </div>
-
-          <div class="admin-form-group">
-            <label>Project Image</label>
-
-            {{ if $project.Image }}
-            <div class="current-project-image">
-              <img
-                src="{{ $project.Image }}"
-                alt="{{ $project.Name }}"
-                style="max-width: 220px; height: auto; border-radius: 8px; display: block; margin-bottom: 10px;"
-              />
-
-              <p>
-                Current image:
-                <a
-                  href="{{ $project.Image }}"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  View
-                </a>
-              </p>
+          <!-- Statistics & Metrics Manager -->
+          <div class="admin-card">
+            <div class="card-header">
+              <h3>Highlight Statistics</h3>
+              <p>Numbers and counters highlighted in the About section of the portfolio.</p>
             </div>
-            {{ end }}
 
-            <input
-              type="file"
-              name="image"
-              accept="image/jpeg,image/png,image/webp"
-            />
+            <form method="POST" action="/admin/statistics" class="admin-form inline-form">
+              <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}">
+              <div class="form-row">
+                <div class="form-group flex-2">
+                  <label for="stat-label">Statistic Label</label>
+                  <input type="text" id="stat-label" name="label" placeholder="e.g. Years Experience" required>
+                </div>
+                <div class="form-group flex-1">
+                  <label for="stat-value">Value</label>
+                  <input type="text" id="stat-value" name="value" placeholder="e.g. 5+" required>
+                </div>
+                <div class="form-group form-action">
+                  <button type="submit" class="btn btn-primary">Add Statistic</button>
+                </div>
+              </div>
+            </form>
 
-            <small>
-              Leave empty to keep the current image.
-            </small>
+            <div class="existing-items-grid">
+              {{ range $index, $statistic := .Portfolio.Statistics }}
+              <div class="item-editor-card">
+                <form method="POST" action="/admin/statistics/{{ $index }}" class="admin-form">
+                  <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+                  <div class="form-row">
+                    <div class="form-group flex-2">
+                      <label>Label</label>
+                      <input type="text" name="label" value="{{ $statistic.Label }}" required>
+                    </div>
+                    <div class="form-group flex-1">
+                      <label>Value</label>
+                      <input type="text" name="value" value="{{ $statistic.Value }}" required>
+                    </div>
+                  </div>
+                  <div class="item-actions">
+                    <button type="submit" class="btn btn-sm btn-outline">Update</button>
+                  </div>
+                </form>
+                <form method="POST" action="/admin/statistics/{{ $index }}/delete" onsubmit="return confirm('Delete this statistic?')">
+                  <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+                  <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+              </div>
+              {{ else }}
+              <p class="empty-state">No highlight statistics recorded yet.</p>
+              {{ end }}
+            </div>
           </div>
 
-          <div class="admin-form-group">
-            <label>Project URL</label>
-            <input
-              type="url"
-              name="url"
-              value="{{ $project.URL }}"
-            />
+          <!-- Services Manager -->
+          <div class="admin-card">
+            <div class="card-header">
+              <h3>Service Offerings</h3>
+              <p>Key professional competencies and service offerings.</p>
+            </div>
+
+            <form method="POST" action="/admin/services" class="admin-form">
+              <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}">
+              <div class="form-row">
+                <div class="form-group flex-2">
+                  <label for="service-title">Service Title</label>
+                  <input type="text" id="service-title" name="title" placeholder="e.g. Backend Engineering" required>
+                </div>
+                <div class="form-group flex-1">
+                  <label for="service-icon">Icon / Identifier</label>
+                  <input type="text" id="service-icon" name="icon" placeholder="e.g. server">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="service-desc">Description</label>
+                <textarea id="service-desc" name="description" rows="3" placeholder="Describe the offering..." required></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary">Add Service</button>
+            </form>
+
+            <div class="existing-items-grid">
+              {{ range $index, $service := .Portfolio.Services }}
+              <div class="item-editor-card">
+                <form method="POST" action="/admin/services/{{ $index }}" class="admin-form">
+                  <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+                  <div class="form-row">
+                    <div class="form-group flex-2">
+                      <label>Title</label>
+                      <input type="text" name="title" value="{{ $service.Title }}" required>
+                    </div>
+                    <div class="form-group flex-1">
+                      <label>Icon</label>
+                      <input type="text" name="icon" value="{{ $service.Icon }}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" rows="3" required>{{ $service.Description }}</textarea>
+                  </div>
+                  <div class="item-actions">
+                    <button type="submit" class="btn btn-sm btn-outline">Update Service</button>
+                  </div>
+                </form>
+                <form method="POST" action="/admin/services/{{ $index }}/delete" onsubmit="return confirm('Delete this service?')">
+                  <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+                  <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+              </div>
+              {{ else }}
+              <p class="empty-state">No services added yet.</p>
+              {{ end }}
+            </div>
           </div>
 
-          <div class="admin-form-group">
-            <label>GitHub URL</label>
-            <input
-              type="url"
-              name="github"
-              value="{{ $project.GitHub }}"
-            />
+          <!-- Education History Manager -->
+          <div class="admin-card">
+            <div class="card-header">
+              <h3>Education History</h3>
+              <p>Academic background displayed in Developer View.</p>
+            </div>
+
+            <form method="POST" action="/admin/education" class="admin-form">
+              <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}">
+              <div class="form-row">
+                <div class="form-group flex-2">
+                  <label for="edu-inst">Institution</label>
+                  <input type="text" id="edu-inst" name="institution" placeholder="University or Institute" required>
+                </div>
+                <div class="form-group flex-1">
+                  <label for="edu-deg">Degree</label>
+                  <input type="text" id="edu-deg" name="degree" placeholder="Degree / Certificate" required>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group flex-2">
+                  <label for="edu-field">Field of Study</label>
+                  <input type="text" id="edu-field" name="field" placeholder="Computer Science / Engineering">
+                </div>
+                <div class="form-group flex-1">
+                  <label for="edu-start">Start Year</label>
+                  <input type="number" id="edu-start" name="start_year" min="1950" max="2100">
+                </div>
+                <div class="form-group flex-1">
+                  <label for="edu-end">End Year</label>
+                  <input type="number" id="edu-end" name="end_year" min="1950" max="2100" placeholder="Ongoing">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="edu-desc">Description</label>
+                <textarea id="edu-desc" name="description" rows="3"></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary">Add Education</button>
+            </form>
+
+            <div class="existing-items-grid">
+              {{ range $index, $edu := .Portfolio.Education }}
+              <div class="item-editor-card">
+                <form method="POST" action="/admin/education/{{ $index }}" class="admin-form">
+                  <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+                  <div class="form-row">
+                    <div class="form-group flex-2">
+                      <label>Institution</label>
+                      <input type="text" name="institution" value="{{ $edu.Institution }}" required>
+                    </div>
+                    <div class="form-group flex-1">
+                      <label>Degree</label>
+                      <input type="text" name="degree" value="{{ $edu.Degree }}" required>
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group flex-2">
+                      <label>Field</label>
+                      <input type="text" name="field" value="{{ $edu.Field }}">
+                    </div>
+                    <div class="form-group flex-1">
+                      <label>Start Year</label>
+                      <input type="number" name="start_year" value="{{ if $edu.StartYear }}{{ $edu.StartYear }}{{ end }}">
+                    </div>
+                    <div class="form-group flex-1">
+                      <label>End Year</label>
+                      <input type="number" name="end_year" value="{{ if $edu.EndYear }}{{ $edu.EndYear }}{{ end }}" placeholder="Ongoing">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" rows="3">{{ $edu.Description }}</textarea>
+                  </div>
+                  <div class="item-actions">
+                    <button type="submit" class="btn btn-sm btn-outline">Update Education</button>
+                  </div>
+                </form>
+                <form method="POST" action="/admin/education/{{ $index }}/delete" onsubmit="return confirm('Delete this education entry?')">
+                  <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+                  <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+              </div>
+              {{ else }}
+              <p class="empty-state">No education records added yet.</p>
+              {{ end }}
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= 2. PROFILE SECTION ================= -->
+        <section id="profile" class="admin-tab-pane" aria-labelledby="profile-heading">
+          <div class="pane-header">
+            <h2 id="profile-heading">Profile &amp; Biography</h2>
+            <p>Core identity, title, bio, and contact channels displayed throughout the website.</p>
           </div>
 
-          <div class="admin-form-group">
-            <label>Technologies</label>
-            <input
-              type="text"
-              name="technologies"
-              value="{{ range $i, $technology := $project.Technologies }}{{ if $i }}, {{ end }}{{ $technology }}{{ end }}"
-            />
+          <div class="admin-card">
+            <form method="POST" action="/admin/profile" enctype="multipart/form-data" class="admin-form">
+              <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}">
+
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label for="prof-name">Full Name</label>
+                  <input type="text" id="prof-name" name="name" value="{{ .Portfolio.Profile.Name }}" required>
+                </div>
+                <div class="form-group flex-1">
+                  <label for="prof-title">Professional Title</label>
+                  <input type="text" id="prof-title" name="title" value="{{ .Portfolio.Profile.Title }}" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="prof-bio">Professional Biography</label>
+                <textarea id="prof-bio" name="bio" rows="6" required>{{ .Portfolio.Profile.Bio }}</textarea>
+                <small class="form-help">Displayed in the Hero intro, About section, and quote card.</small>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label for="prof-loc">Location</label>
+                  <input type="text" id="prof-loc" name="location" value="{{ .Portfolio.Profile.Location }}" required>
+                </div>
+                <div class="form-group flex-1">
+                  <label for="prof-avail">Availability Status</label>
+                  <input type="text" id="prof-avail" name="availability" value="{{ .Portfolio.Profile.Availability }}" placeholder="e.g. Available for opportunities">
+                </div>
+              </div>
+
+              <!-- Profile Image Upload & Preview -->
+              <div class="form-group image-upload-group">
+                <label>Profile Image</label>
+                <div class="image-preview-box">
+                  <img
+                    id="profile-img-preview"
+                    src="{{ if .Portfolio.Profile.ProfileImage }}{{ .Portfolio.Profile.ProfileImage }}{{ else }}/static/images/profile.png{{ end }}"
+                    alt="Profile Preview"
+                    class="preview-thumbnail"
+                  >
+                  <div class="upload-controls">
+                    <input
+                      type="file"
+                      id="profile-image-file"
+                      name="profile_image_file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onchange="previewImage(this, 'profile-img-preview')"
+                    >
+                    <input type="hidden" name="profile_image" value="{{ .Portfolio.Profile.ProfileImage }}">
+                    <small class="form-help">Upload JPG, PNG, or WebP. Saved locally under <code>/uploads/profile/</code>. Max 10MB.</small>
+                  </div>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary">Save Profile Changes</button>
+            </form>
           </div>
 
-          <button type="submit">Update Project</button>
-        </form>
+          <!-- Direct Contact Details -->
+          <div class="admin-card">
+            <div class="card-header">
+              <h3>Contact Details</h3>
+              <p>Email, phone, and geographic location.</p>
+            </div>
 
-        <form
-          method="POST"
-          action="/admin/projects/{{ $index }}/delete"
-          onsubmit="return confirm('Delete this project?')"
-        >
-          <button type="submit" class="admin-delete">Delete</button>
-        </form>
-      </div>
-
-      {{ else }}
-
-      <p>No projects added yet.</p>
-
-      {{ end }}
-    </div>
-  </section>
-
-  <!-- Certificates Management -->
-  <section class="analytics-card admin-section">
-    <header>
-      <h2>Certificates</h2>
-      <p>Add or update professional certificates.</p>
-    </header>
-
-    <!-- Add Certificate -->
-    <form
-      method="POST"
-      action="/admin/certificates"
-      enctype="multipart/form-data"
-    >
-      <h3>Add Certificate</h3>
-
-      <div class="admin-form-group">
-        <label for="certificate-title">Title</label>
-        <input
-          type="text"
-          id="certificate-title"
-          name="title"
-          required
-        />
-      </div>
-
-      <div class="admin-form-group">
-        <label for="certificate-image">Certificate Image</label>
-        <input
-          type="file"
-          id="certificate-image"
-          name="image"
-          accept="image/jpeg,image/png,image/webp"
-        />
-      </div>
-
-      <div class="admin-form-group">
-        <label for="certificate-issuer">Issuer</label>
-        <input
-          type="text"
-          id="certificate-issuer"
-          name="issuer"
-          required
-        />
-      </div>
-
-      <div class="admin-form-group">
-        <label for="certificate-date">Issue Date</label>
-        <input
-          type="text"
-          id="certificate-date"
-          name="issue_date"
-          placeholder="August 2026"
-        />
-      </div>
-
-      <div class="admin-form-group">
-        <label for="certificate-id">Credential ID</label>
-        <input
-          type="text"
-          id="certificate-id"
-          name="credential_id"
-        />
-      </div>
-
-      <div class="admin-form-group">
-        <label for="certificate-description">Description</label>
-        <textarea
-          id="certificate-description"
-          name="description"
-          rows="5"
-        ></textarea>
-      </div>
-
-      <div class="admin-form-group">
-        <label for="certificate-url">Verification URL</label>
-        <input
-          type="url"
-          id="certificate-url"
-          name="verification_url"
-          placeholder="https://..."
-        />
-      </div>
-
-      <button type="submit">Add Certificate</button>
-    </form>
-
-    <!-- Existing Certificates -->
-    <div class="existing-certificates">
-      <h3>Existing Certificates</h3>
-
-      {{ range $index, $certificate := .Certificates }}
-
-      <form
-        method="POST"
-        action="/admin/certificates/{{ $index }}"
-        enctype="multipart/form-data"
-        class="certificate-editor"
-      >
-        <h4>Certificate {{ $index }}</h4>
-
-        <div class="admin-form-group">
-          <label>Title</label>
-          <input
-            type="text"
-            name="title"
-            value="{{ $certificate.Title }}"
-            required
-          />
-        </div>
-
-        <div class="admin-form-group">
-          <label>Issuer</label>
-          <input
-            type="text"
-            name="issuer"
-            value="{{ $certificate.Issuer }}"
-            required
-          />
-        </div>
-
-        <div class="admin-form-group">
-          <label>Issue Date</label>
-          <input
-            type="text"
-            name="issue_date"
-            value="{{ $certificate.IssueDate }}"
-          />
-        </div>
-
-        <div class="admin-form-group">
-          <label>Credential ID</label>
-          <input
-            type="text"
-            name="credential_id"
-            value="{{ $certificate.CredentialID }}"
-          />
-        </div>
-
-        <div class="admin-form-group">
-          <label>Description</label>
-          <textarea
-            name="description"
-            rows="5"
-          >{{ $certificate.Description }}</textarea>
-        </div>
-
-        <div class="admin-form-group">
-          <label>Certificate Image</label>
-
-          {{ if $certificate.Image }}
-          <p>
-            Current image:
-            <a
-              href="{{ $certificate.Image }}"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              View
-            </a>
-          </p>
-          {{ end }}
-
-          <input
-            type="file"
-            name="image"
-            accept="image/jpeg,image/png,image/webp"
-          />
-
-          <small>
-            Leave empty to keep the current image.
-          </small>
-        </div>
-
-        <div class="admin-form-group">
-          <label>Verification URL</label>
-          <input
-            type="url"
-            name="verification_url"
-            value="{{ $certificate.VerificationURL }}"
-          />
-        </div>
-
-        <button type="submit">Update Certificate</button>
-      </form>
-
-      <form
-        method="POST"
-        action="/admin/certificates/{{ $index }}/delete"
-        onsubmit="return confirm('Delete this certificate?')"
-        class="certificate-delete"
-      >
-        <button type="submit" class="admin-delete">
-          Delete Certificate
-        </button>
-      </form>
-
-      {{ else }}
-
-      <p>No certificates added yet.</p>
-
-      {{ end }}
-    </div>
-  </section>
-
-  <!-- Contact Management -->
-  <section class="analytics-card admin-section">
-    <header>
-      <h2>Contact</h2>
-      <p>Update the contact details shown on your portfolio.</p>
-    </header>
-
-    <form method="POST" action="/admin/contact">
-      <div class="admin-form-group">
-        <label for="contact_email">Email</label>
-        <input
-          type="email"
-          id="contact_email"
-          name="email"
-          value="{{ .Contact.Email }}"
-          required
-        />
-      </div>
-
-      <div class="admin-form-group">
-        <label for="contact_phone">Phone</label>
-        <input
-          type="tel"
-          id="contact_phone"
-          name="phone"
-          value="{{ .Contact.Phone }}"
-        />
-      </div>
-
-      <div class="admin-form-group">
-        <label for="contact_location">Location</label>
-        <input
-          type="text"
-          id="contact_location"
-          name="location"
-          value="{{ .Contact.Location }}"
-        />
-      </div>
-
-      <button type="submit">Save Contact</button>
-    </form>
-  </section>
-
-  <!-- Social Links Management -->
-  <section class="analytics-card admin-section">
-    <header>
-      <h2>Social Links</h2>
-      <p>Add, update, or remove the social links shown on your portfolio.</p>
-    </header>
-
-    <form method="POST" action="/admin/social-links">
-      <h3>Add Social Link</h3>
-
-      <div class="admin-form-group">
-        <label for="social-platform">Platform</label>
-        <input
-          type="text"
-          id="social-platform"
-          name="platform"
-          placeholder="e.g. GitHub"
-          required
-        />
-      </div>
-
-      <div class="admin-form-group">
-        <label for="social-url">URL</label>
-        <input
-          type="url"
-          id="social-url"
-          name="url"
-          placeholder="https://github.com/username"
-          required
-        />
-      </div>
-
-      <div class="admin-form-group">
-        <label for="social-username">Username</label>
-        <input
-          type="text"
-          id="social-username"
-          name="username"
-          placeholder="e.g. @username"
-        />
-      </div>
-
-      <button type="submit">Add Social Link</button>
-    </form>
-
-    <div class="existing-social-links">
-      <h3>Existing Social Links</h3>
-
-      {{ range $index, $link := .SocialLinks }}
-
-      <div class="social-link-editor">
-        <form method="POST" action="/admin/social-links/{{ $index }}">
-          <h4>Social Link {{ $index }}</h4>
-
-          <div class="admin-form-group">
-            <label>Platform</label>
-            <input
-              type="text"
-              name="platform"
-              value="{{ $link.Platform }}"
-              required
-            />
+            <form method="POST" action="/admin/contact" class="admin-form">
+              <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}">
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label for="contact-email">Email Address</label>
+                  <input type="text" id="contact-email" name="email" value="{{ cleanEmail .Portfolio.Contact.Email }}" required>
+                  <small class="form-help">Clean email address without markdown syntax.</small>
+                </div>
+                <div class="form-group flex-1">
+                  <label for="contact-phone">Phone / WhatsApp</label>
+                  <input type="text" id="contact-phone" name="phone" value="{{ .Portfolio.Contact.Phone }}">
+                  <small class="form-help">Include country code (e.g. +234...) for WhatsApp direct link.</small>
+                </div>
+                <div class="form-group flex-1">
+                  <label for="contact-loc">Location</label>
+                  <input type="text" id="contact-loc" name="location" value="{{ .Portfolio.Contact.Location }}">
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary">Save Contact Information</button>
+            </form>
           </div>
 
-          <div class="admin-form-group">
-            <label>URL</label>
-            <input
-              type="url"
-              name="url"
-              value="{{ $link.URL }}"
-              required
-            />
+          <!-- Social Links Manager -->
+          <div class="admin-card">
+            <div class="card-header">
+              <h3>Social Links</h3>
+              <p>Profiles and accounts linked across homepage and developer views.</p>
+            </div>
+
+            <form method="POST" action="/admin/social-links" class="admin-form inline-form">
+              <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}">
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label for="soc-platform">Platform Name</label>
+                  <input type="text" id="soc-platform" name="platform" placeholder="e.g. GitHub" required>
+                </div>
+                <div class="form-group flex-2">
+                  <label for="soc-url">Profile URL</label>
+                  <input type="url" id="soc-url" name="url" placeholder="https://github.com/..." required>
+                </div>
+                <div class="form-group flex-1">
+                  <label for="soc-user">Handle / Username</label>
+                  <input type="text" id="soc-user" name="username" placeholder="e.g. @username">
+                </div>
+                <div class="form-group form-action">
+                  <button type="submit" class="btn btn-primary">Add Link</button>
+                </div>
+              </div>
+            </form>
+
+            <div class="existing-items-grid">
+              {{ range $index, $link := .Portfolio.SocialLinks }}
+              <div class="item-editor-card">
+                <form method="POST" action="/admin/social-links/{{ $index }}" class="admin-form">
+                  <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+                  <div class="form-row">
+                    <div class="form-group flex-1">
+                      <label>Platform</label>
+                      <input type="text" name="platform" value="{{ $link.Platform }}" required>
+                    </div>
+                    <div class="form-group flex-2">
+                      <label>URL</label>
+                      <input type="url" name="url" value="{{ $link.URL }}" required>
+                    </div>
+                    <div class="form-group flex-1">
+                      <label>Username</label>
+                      <input type="text" name="username" value="{{ $link.Username }}">
+                    </div>
+                  </div>
+                  <div class="item-actions">
+                    <button type="submit" class="btn btn-sm btn-outline">Update</button>
+                  </div>
+                </form>
+                <form method="POST" action="/admin/social-links/{{ $index }}/delete" onsubmit="return confirm('Delete this social link?')">
+                  <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+                  <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+              </div>
+              {{ else }}
+              <p class="empty-state">No social links added yet.</p>
+              {{ end }}
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= 3. PHOTOS SECTION ================= -->
+        <section id="photos" class="admin-tab-pane" aria-labelledby="photos-heading">
+          <div class="pane-header">
+            <h2 id="photos-heading">Photos &amp; Hero Slideshow</h2>
+            <p>Manage the rotating portraits featured on the homepage and developer view.</p>
           </div>
 
-          <div class="admin-form-group">
-            <label>Username</label>
-            <input
-              type="text"
-              name="username"
-              value="{{ $link.Username }}"
-            />
+          <!-- Add Photo Form -->
+          <div class="admin-card">
+            <div class="card-header">
+              <h3>Upload Slideshow Photo</h3>
+              <p>Upload a new portrait photo to include in the five-second crossfade carousel.</p>
+            </div>
+
+            <form method="POST" action="/admin/photos" enctype="multipart/form-data" class="admin-form">
+              <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}">
+              <div class="form-row">
+                <div class="form-group flex-2">
+                  <label for="photo-file">Select Image File</label>
+                  <input
+                    type="file"
+                    id="photo-file"
+                    name="image"
+                    accept="image/jpeg,image/png,image/webp"
+                    required
+                    onchange="previewImage(this, 'new-photo-preview')"
+                  >
+                  <small class="form-help">Accepted formats: JPG, PNG, WebP. Saved locally under <code>/uploads/photos/</code>. Max 10MB.</small>
+                </div>
+                <div class="form-group flex-1">
+                  <label for="photo-order">Display Sequence</label>
+                  <input type="number" id="photo-order" name="display_order" value="{{ add (len .Portfolio.Photos) 1 }}" min="1">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="photo-caption">Photo Caption / Accessibility Description</label>
+                <input type="text" id="photo-caption" name="caption" placeholder="e.g. Terna Peter Kpensalen — Professional Portrait">
+              </div>
+
+              <div class="preview-stage" id="new-photo-preview-box" style="display: none; margin-bottom: 16px;">
+                <label>New Image Preview</label>
+                <img id="new-photo-preview" src="" alt="Selected Photo Preview" class="preview-thumbnail photo-thumb">
+              </div>
+
+              <button type="submit" class="btn btn-primary">Upload &amp; Add Photo</button>
+            </form>
           </div>
 
-          <button type="submit">Update Social Link</button>
-        </form>
+          <!-- Existing Photos List -->
+          <div class="admin-card">
+            <div class="card-header">
+              <h3>Current Slideshow Photos ({{ len .Portfolio.Photos }})</h3>
+              <p>Active sequence displayed on public and developer views.</p>
+            </div>
 
-        <form
-          method="POST"
-          action="/admin/social-links/{{ $index }}/delete"
-          onsubmit="return confirm('Delete this social link?')"
-        >
-          <button type="submit" class="admin-delete">Delete</button>
-        </form>
+            <div class="photos-admin-grid">
+              {{ range $index, $photo := .Portfolio.Photos }}
+              <div class="photo-admin-card">
+                <div class="photo-thumb-wrap">
+                  <img src="{{ $photo.URL }}" alt="Slide {{ add $index 1 }}" class="photo-thumb">
+                  <span class="photo-order-badge">#{{ add $index 1 }}</span>
+                </div>
+
+                {{ if gt $photo.ID 0 }}
+                <form method="POST" action="/admin/photos/{{ $index }}" enctype="multipart/form-data" class="admin-form">
+                  <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+                  <div class="form-group">
+                    <label>Caption</label>
+                    <input type="text" name="caption" value="{{ $photo.Caption }}">
+                  </div>
+
+                  <div class="form-group">
+                    <label>Order</label>
+                    <input type="number" name="display_order" value="{{ $photo.DisplayOrder }}" min="1">
+                  </div>
+
+                  <div class="form-group">
+                    <label>Replace Image</label>
+                    <input
+                      type="file"
+                      name="image"
+                      accept="image/jpeg,image/png,image/webp"
+                      onchange="previewImage(this, 'photo-replace-preview-{{ $index }}')"
+                    >
+                    <small class="form-help">Leave empty to keep existing.</small>
+                    <img id="photo-replace-preview-{{ $index }}" src="" alt="Replacement Preview" style="display:none; max-width: 120px; border-radius: 6px; margin-top: 8px;">
+                  </div>
+
+                  <div class="item-actions">
+                    <button type="submit" class="btn btn-sm btn-outline">Save Updates</button>
+                  </div>
+                </form>
+
+                <form method="POST" action="/admin/photos/{{ $index }}/delete" onsubmit="return confirm('Delete this slideshow photo?')">
+                  <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+                  <button type="submit" class="btn btn-sm btn-danger btn-block">Delete Photo</button>
+                </form>
+                {{ else }}
+                <div style="padding: 12px; text-align: center; background: var(--color-bg-alt); border-radius: 6px; border: 1px dashed var(--color-border);">
+                  <span style="font-size: 0.75rem; color: var(--color-mint); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px;">Bundled Asset</span>
+                  <p style="font-size: 0.8rem; color: var(--color-text-dim); margin: 0;">Built-in fallback portrait. Upload custom photos above to override.</p>
+                </div>
+                {{ end }}
+              </div>
+              {{ else }}
+              <p class="empty-state">No photos added yet. Default static portraits are active.</p>
+              {{ end }}
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= 4. PROJECTS SECTION ================= -->
+        <section id="projects" class="admin-tab-pane" aria-labelledby="projects-heading">
+          <div class="pane-header">
+            <h2 id="projects-heading">Project Portfolio</h2>
+            <p>Manage project showcases, descriptions, technology stacks, and live links.</p>
+          </div>
+
+          <!-- Add Project Form -->
+          <div class="admin-card">
+            <div class="card-header">
+              <h3>Add New Project</h3>
+              <p>Create a new project entry with local screenshot upload.</p>
+            </div>
+
+            <form method="POST" action="/admin/projects" enctype="multipart/form-data" class="admin-form">
+              <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}">
+              <div class="form-row">
+                <div class="form-group flex-2">
+                  <label for="proj-name">Project Title</label>
+                  <input type="text" id="proj-name" name="name" placeholder="e.g. Price Estimation Engine" required>
+                </div>
+                <div class="form-group flex-1">
+                  <label for="proj-image">Project Screenshot</label>
+                  <input
+                    type="file"
+                    id="proj-image"
+                    name="image"
+                    accept="image/jpeg,image/png,image/webp"
+                    onchange="previewImage(this, 'new-proj-preview')"
+                  >
+                  <small class="form-help">Upload JPG, PNG, or WebP. Saved locally under <code>/uploads/projects/</code>. Max 10MB.</small>
+                </div>
+              </div>
+
+              <div class="preview-stage" id="new-proj-preview-box" style="display:none; margin-bottom: 16px;">
+                <label>Screenshot Preview</label>
+                <img id="new-proj-preview" src="" alt="Project Preview" class="preview-thumbnail">
+              </div>
+
+              <div class="form-group">
+                <label for="proj-desc">Project Description</label>
+                <textarea id="proj-desc" name="description" rows="4" placeholder="Describe the architecture, problem solved, and technical achievements..." required></textarea>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label for="proj-url">Live Deployment URL</label>
+                  <input type="url" id="proj-url" name="url" placeholder="https://example.com">
+                </div>
+                <div class="form-group flex-1">
+                  <label for="proj-github">GitHub Repository URL</label>
+                  <input type="url" id="proj-github" name="github" placeholder="https://github.com/username/project">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="proj-tech">Technologies &amp; Libraries</label>
+                <input type="text" id="proj-tech" name="technologies" placeholder="Comma-separated: Golang, PostgreSQL, Docker, Redis">
+              </div>
+
+              <button type="submit" class="btn btn-primary">Add Project to Portfolio</button>
+            </form>
+          </div>
+
+          <!-- Existing Projects List -->
+          <div class="admin-card">
+            <div class="card-header">
+              <h3>Existing Projects ({{ len .Portfolio.Projects }})</h3>
+              <p>Update content or replace screenshots safely.</p>
+            </div>
+
+            <div class="existing-projects-list">
+              {{ range $index, $project := .Portfolio.Projects }}
+              <div class="project-admin-card">
+                <div class="project-admin-head">
+                  <div class="project-thumb-preview">
+                    {{ if $project.Image }}
+                    <img
+                      src="{{ $project.Image }}"
+                      alt="{{ $project.Name }}"
+                      class="preview-thumbnail"
+                      onerror="this.src='/static/images/mypage.png';"
+                    >
+                    {{ else }}
+                    <div class="no-img-badge">No Image</div>
+                    {{ end }}
+                  </div>
+                  <div>
+                    <h4>{{ if $project.Name }}{{ $project.Name }}{{ else }}Untitled Project #{{ add $index 1 }}{{ end }}</h4>
+                    <span class="tech-inline-pill">{{ range $project.Technologies }}{{ . }} · {{ end }}</span>
+                  </div>
+                </div>
+
+                <form method="POST" action="/admin/projects/{{ $index }}" enctype="multipart/form-data" class="admin-form">
+                  <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+                  <div class="form-row">
+                    <div class="form-group flex-2">
+                      <label>Project Name</label>
+                      <input type="text" name="name" value="{{ $project.Name }}" required>
+                    </div>
+                    <div class="form-group flex-1">
+                      <label>Replace Screenshot</label>
+                      <input
+                        type="file"
+                        name="image"
+                        accept="image/jpeg,image/png,image/webp"
+                        onchange="previewImage(this, 'proj-replace-preview-{{ $index }}')"
+                      >
+                      <small class="form-help">Leave empty to keep current image.</small>
+                    </div>
+                  </div>
+
+                  <img id="proj-replace-preview-{{ $index }}" src="" alt="Replacement Preview" style="display:none; max-width: 160px; border-radius: 8px; margin-bottom: 12px;">
+
+                  <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" rows="3" required>{{ $project.Description }}</textarea>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group flex-1">
+                      <label>Live URL</label>
+                      <input type="url" name="url" value="{{ $project.URL }}">
+                    </div>
+                    <div class="form-group flex-1">
+                      <label>GitHub URL</label>
+                      <input type="url" name="github" value="{{ $project.GitHub }}">
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Technologies (comma-separated)</label>
+                    <input type="text" name="technologies" value="{{ range $i, $t := $project.Technologies }}{{ if $i }}, {{ end }}{{ $t }}{{ end }}">
+                  </div>
+
+                  <div class="item-actions">
+                    <button type="submit" class="btn btn-sm btn-outline">Update Project</button>
+                  </div>
+                </form>
+
+                <form method="POST" action="/admin/projects/{{ $index }}/delete" onsubmit="return confirm('Delete this project?')">
+                  <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+                  <button type="submit" class="btn btn-sm btn-danger btn-block">Delete Project</button>
+                </form>
+              </div>
+              {{ else }}
+              <p class="empty-state">No projects added yet.</p>
+              {{ end }}
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= 5. SKILLS SECTION ================= -->
+        <section id="skills" class="admin-tab-pane" aria-labelledby="skills-heading">
+          <div class="pane-header">
+            <h2 id="skills-heading">Skills &amp; Capabilities</h2>
+            <p>Manage categorized proficiencies across backend, AI/security, frontend, and tools.</p>
+          </div>
+
+          <div class="admin-card">
+            <div class="card-header">
+              <h3>Add Skill</h3>
+              <p>Assign skills to clear architectural categories.</p>
+            </div>
+
+            <form method="POST" action="/admin/skills" class="admin-form inline-form">
+              <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}">
+              <div class="form-row">
+                <div class="form-group flex-2">
+                  <label for="skill-name">Skill Name</label>
+                  <input type="text" id="skill-name" name="name" placeholder="e.g. Golang, PostgreSQL, Docker" required>
+                </div>
+                <div class="form-group flex-2">
+                  <label for="skill-cat">Category</label>
+                  <input type="text" id="skill-cat" name="category" placeholder="Backend, AI &amp; Automation, Tools &amp; Deployment..." required list="category-suggestions">
+                  <datalist id="category-suggestions">
+                    <option value="Backend">
+                    <option value="AI &amp; Automation">
+                    <option value="Cybersecurity">
+                    <option value="Frontend">
+                    <option value="Tools &amp; Deployment">
+                    <option value="Database">
+                  </datalist>
+                </div>
+                <div class="form-group form-action">
+                  <button type="submit" class="btn btn-primary">Add Skill</button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Existing Skills List -->
+          <div class="admin-card">
+            <div class="card-header">
+              <h3>Existing Skills ({{ len .Portfolio.Skills }})</h3>
+              <p>Grouped and editable.</p>
+            </div>
+
+            <div class="skills-admin-list">
+              {{ range $index, $skill := .Portfolio.Skills }}
+              <div class="item-editor-card inline-card">
+                <form method="POST" action="/admin/skills/{{ $index }}" class="admin-form inline-form">
+                  <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+                  <div class="form-row">
+                    <div class="form-group flex-2">
+                      <label>Name</label>
+                      <input type="text" name="name" value="{{ $skill.Name }}" required>
+                    </div>
+                    <div class="form-group flex-2">
+                      <label>Category</label>
+                      <input type="text" name="category" value="{{ $skill.Category }}">
+                    </div>
+                    <div class="form-group form-action">
+                      <button type="submit" class="btn btn-sm btn-outline">Update</button>
+                    </div>
+                  </div>
+                </form>
+                <form method="POST" action="/admin/skills/{{ $index }}/delete" onsubmit="return confirm('Delete this skill?')">
+                  <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+                  <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+              </div>
+              {{ else }}
+              <p class="empty-state">No skills added yet.</p>
+              {{ end }}
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= 6. CERTIFICATES SECTION ================= -->
+        <section id="certificates" class="admin-tab-pane" aria-labelledby="certs-heading">
+          <div class="pane-header">
+            <h2 id="certs-heading">Certificates &amp; Credentials</h2>
+            <p>Upload and manage verified licenses and professional achievements.</p>
+          </div>
+
+          <!-- Add Certificate Form -->
+          <div class="admin-card">
+            <div class="card-header">
+              <h3>Add Certificate</h3>
+              <p>Add a credential with local image upload.</p>
+            </div>
+
+            <form method="POST" action="/admin/certificates" enctype="multipart/form-data" class="admin-form">
+              <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}">
+              <div class="form-row">
+                <div class="form-group flex-2">
+                  <label for="cert-title">Certificate Title</label>
+                  <input type="text" id="cert-title" name="title" placeholder="e.g. Cyber Threat Management" required>
+                </div>
+                <div class="form-group flex-1">
+                  <label for="cert-issuer">Issuing Organization</label>
+                  <input type="text" id="cert-issuer" name="issuer" placeholder="e.g. Cisco Networking Academy" required>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label for="cert-date">Issue Date</label>
+                  <input type="text" id="cert-date" name="issue_date" placeholder="e.g. Mar 2026">
+                </div>
+                <div class="form-group flex-1">
+                  <label for="cert-id">Credential ID</label>
+                  <input type="text" id="cert-id" name="credential_id" placeholder="Optional ID string">
+                </div>
+                <div class="form-group flex-2">
+                  <label for="cert-vurl">Verification URL</label>
+                  <input type="url" id="cert-vurl" name="verification_url" placeholder="https://www.credly.com/...">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="cert-desc">Description</label>
+                <textarea id="cert-desc" name="description" rows="3" placeholder="Core competencies verified..."></textarea>
+              </div>
+
+              <div class="form-group">
+                <label for="cert-img-file">Certificate Image</label>
+                <input
+                  type="file"
+                  id="cert-img-file"
+                  name="image"
+                  accept="image/jpeg,image/png,image/webp"
+                  onchange="previewImage(this, 'new-cert-preview')"
+                >
+                <small class="form-help">Upload JPG, PNG, or WebP. Saved locally under <code>/uploads/certificates/</code>. Max 10MB.</small>
+              </div>
+
+              <div class="preview-stage" id="new-cert-preview-box" style="display:none; margin-bottom: 16px;">
+                <label>Certificate Preview</label>
+                <img id="new-cert-preview" src="" alt="Certificate Preview" class="preview-thumbnail">
+              </div>
+
+              <button type="submit" class="btn btn-primary">Add Certificate</button>
+            </form>
+          </div>
+
+          <!-- Existing Certificates List -->
+          <div class="admin-card">
+            <div class="card-header">
+              <h3>Existing Certificates ({{ len .Portfolio.Certificates }})</h3>
+              <p>Edit details or re-upload images.</p>
+            </div>
+
+            <div class="certificates-admin-list">
+              {{ range $index, $cert := .Portfolio.Certificates }}
+              <div class="item-editor-card">
+                <div class="cert-admin-header">
+                  <div class="cert-thumb-box">
+                    {{ if and $cert.Image (not (isCloudinary $cert.Image)) }}
+                    <img src="{{ $cert.Image }}" alt="{{ $cert.Title }}" class="preview-thumbnail" onerror="this.style.display='none';">
+                    {{ else }}
+                    <div class="cert-warning-placeholder">
+                      <span aria-hidden="true">📜</span>
+                      <small>Cloudinary fallback active</small>
+                    </div>
+                    {{ end }}
+                  </div>
+                  <div class="cert-admin-meta">
+                    <h4>{{ $cert.Title }}</h4>
+                    <p class="cert-subline">{{ $cert.Issuer }} · {{ $cert.IssueDate }}</p>
+                    {{ if isCloudinary $cert.Image }}
+                    <span class="badge-warning">⚠️ Old Cloudinary URL detected. Please re-upload certificate image file to store locally.</span>
+                    {{ end }}
+                  </div>
+                </div>
+
+                <form method="POST" action="/admin/certificates/{{ $index }}" enctype="multipart/form-data" class="admin-form">
+                  <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+                  <div class="form-row">
+                    <div class="form-group flex-2">
+                      <label>Title</label>
+                      <input type="text" name="title" value="{{ $cert.Title }}" required>
+                    </div>
+                    <div class="form-group flex-1">
+                      <label>Issuer</label>
+                      <input type="text" name="issuer" value="{{ $cert.Issuer }}" required>
+                    </div>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group flex-1">
+                      <label>Issue Date</label>
+                      <input type="text" name="issue_date" value="{{ $cert.IssueDate }}">
+                    </div>
+                    <div class="form-group flex-1">
+                      <label>Credential ID</label>
+                      <input type="text" name="credential_id" value="{{ $cert.CredentialID }}">
+                    </div>
+                    <div class="form-group flex-2">
+                      <label>Verification URL</label>
+                      <input type="url" name="verification_url" value="{{ $cert.VerificationURL }}">
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" rows="3">{{ $cert.Description }}</textarea>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Replace Certificate Image</label>
+                    <input
+                      type="file"
+                      name="image"
+                      accept="image/jpeg,image/png,image/webp"
+                      onchange="previewImage(this, 'cert-replace-preview-{{ $index }}')"
+                    >
+                    <small class="form-help">Leave empty to keep existing.</small>
+                    <img id="cert-replace-preview-{{ $index }}" src="" alt="Replacement Preview" style="display:none; max-width: 140px; border-radius: 8px; margin-top: 8px;">
+                  </div>
+
+                  <div class="item-actions">
+                    <button type="submit" class="btn btn-sm btn-outline">Update Certificate</button>
+                  </div>
+                </form>
+
+                <form method="POST" action="/admin/certificates/{{ $index }}/delete" onsubmit="return confirm('Delete this certificate?')">
+                  <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+                  <button type="submit" class="btn btn-sm btn-danger btn-block">Delete Certificate</button>
+                </form>
+              </div>
+              {{ else }}
+              <p class="empty-state">No certificates added yet.</p>
+              {{ end }}
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= 7. RÉSUMÉ SECTION ================= -->
+        <section id="resume" class="admin-tab-pane" aria-labelledby="resume-heading">
+          <div class="pane-header">
+            <h2 id="resume-heading">Résumé Management</h2>
+            <p>Upload, replace, and verify your active curriculum vitae PDF document.</p>
+          </div>
+
+          <div class="admin-card">
+            <div class="resume-status-card">
+              <div class="resume-icon-badge" aria-hidden="true">📄</div>
+              <div>
+                <h3>Active Résumé Document</h3>
+                <p>Public download endpoint: <code>/resume</code> (disposition: attachment).</p>
+                <div class="resume-actions-group">
+                  <a href="/resume" download class="btn btn-primary">Download Current Résumé ↓</a>
+                </div>
+              </div>
+            </div>
+
+            <form method="POST" action="/admin/resume" enctype="multipart/form-data" class="admin-form" style="margin-top: 28px;">
+              <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}">
+              <div class="form-group">
+                <label for="resume-upload">Upload Replacement Résumé PDF</label>
+                <input
+                  type="file"
+                  id="resume-upload"
+                  name="resume"
+                  accept="application/pdf"
+                  required
+                >
+                <small class="form-help">Must be a valid PDF document (magic signature <code>%PDF-</code>). Maximum size: 10MB.</small>
+              </div>
+
+              <button type="submit" class="btn btn-primary">Upload &amp; Replace Résumé</button>
+            </form>
+          </div>
+        </section>
+
+        <!-- ================= 8. ANALYTICS SECTION ================= -->
+        <section id="analytics" class="admin-tab-pane" aria-labelledby="analytics-heading">
+          <div class="pane-header">
+            <h2 id="analytics-heading">Traffic &amp; Visitor Analytics</h2>
+            <p>Real-time page views, device categories, and session duration telemetry.</p>
+          </div>
+
+          <div class="analytics-panels-grid">
+            <div class="admin-card">
+              <div class="card-header">
+                <h3>Device Category Breakdown</h3>
+              </div>
+              <div id="device-breakdown">
+                <p class="empty-state">Loading device data...</p>
+              </div>
+            </div>
+
+            <div class="admin-card">
+              <div class="card-header">
+                <h3>Page Views Breakdown</h3>
+              </div>
+              <div id="page-views">
+                <p class="empty-state">Loading page views...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Visits Telemetry Table -->
+          <div class="admin-card">
+            <div class="card-header">
+              <h3>Recent Visitor Sessions</h3>
+            </div>
+            <div class="table-wrapper">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Page</th>
+                    <th>Device</th>
+                    <th>Anonymized IP</th>
+                    <th>Session Duration</th>
+                    <th>Timestamp</th>
+                  </tr>
+                </thead>
+                <tbody id="recent-visits">
+                  <tr>
+                    <td colspan="5" class="empty-state">Loading visitor telemetry...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
       </div>
+    </main>
+  </div>
 
-      {{ else }}
+  <script src="/static/js/admin-analytics.js"></script>
+  <script>
+    // Tab and Navigation Switcher
+    document.addEventListener("DOMContentLoaded", function () {
+      const navLinks = document.querySelectorAll(".sidebar-nav .nav-item");
+      const panes = document.querySelectorAll(".admin-tab-pane");
+      const titleElement = document.getElementById("active-section-title");
+      const toggle = document.getElementById("admin-menu-toggle");
+      const sidebar = document.getElementById("admin-sidebar");
 
-      <p>No social links added yet.</p>
+      function activateSection(targetId) {
+        if (!targetId) targetId = "overview";
+        targetId = targetId.replace("#", "");
 
-      {{ end }}
-    </div>
-  </section>
+        let targetFound = false;
+        panes.forEach(function (pane) {
+          const isTarget = pane.id === targetId;
+          pane.classList.toggle("active", isTarget);
+          if (isTarget) targetFound = true;
+        });
 
-  <!-- Device and Page Analytics -->
-  <section class="analytics-grid">
-    <article class="analytics-card">
-      <header>
-        <h2>Devices</h2>
-      </header>
+        if (!targetFound && panes.length > 0) {
+          panes[0].classList.add("active");
+          targetId = panes[0].id;
+        }
 
-      <div id="device-breakdown">
-        <p>No data yet.</p>
-      </div>
-    </article>
+        navLinks.forEach(function (link) {
+          const isMatch = link.getAttribute("data-section") === targetId || link.getAttribute("href") === "#" + targetId;
+          link.classList.toggle("active", isMatch);
+          if (isMatch && titleElement) {
+            titleElement.textContent = link.querySelector(".nav-label").textContent;
+          }
+        });
 
-    <article class="analytics-card">
-      <header>
-        <h2>Pages</h2>
-      </header>
+        if (sidebar && sidebar.classList.contains("is-open")) {
+          sidebar.classList.remove("is-open");
+          if (toggle) toggle.setAttribute("aria-expanded", "false");
+        }
+      }
 
-      <div id="page-views">
-        <p>No data yet.</p>
-      </div>
-    </article>
-  </section>
+      navLinks.forEach(function (link) {
+        link.addEventListener("click", function (e) {
+          const href = link.getAttribute("href");
+          if (href && href.startsWith("#")) {
+            e.preventDefault();
+            history.pushState(null, null, href);
+            activateSection(href);
+          }
+        });
+      });
 
-  <!-- Recent Visits -->
-  <section class="analytics-card recent-visits">
-    <header>
-      <h2>Recent Visits</h2>
-    </header>
+      // Mobile Menu Toggle
+      if (toggle && sidebar) {
+        toggle.addEventListener("click", function () {
+          const isOpen = sidebar.classList.toggle("is-open");
+          toggle.setAttribute("aria-expanded", String(isOpen));
+        });
+      }
 
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>Page</th>
-            <th>Device</th>
-            <th>IP</th>
-            <th>Duration</th>
-            <th>Time</th>
-          </tr>
-        </thead>
+      // Initial activation based on URL hash
+      if (window.location.hash) {
+        activateSection(window.location.hash);
+      } else {
+        activateSection("overview");
+      }
 
-        <tbody id="recent-visits">
-          <tr>
-            <td colspan="5">No visits yet.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-</section>
+      window.addEventListener("hashchange", function () {
+        activateSection(window.location.hash);
+      });
 
-<script src="/static/js/admin-analytics.js"></script>
+      // Submit feedback button states
+      document.querySelectorAll("form").forEach(function (form) {
+        form.addEventListener("submit", function () {
+          const btn = form.querySelector("button[type='submit']");
+          if (btn && !btn.classList.contains("btn-danger")) {
+            btn.dataset.originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = "Saving...";
+          }
+        });
+      });
+    });
 
+    // Image Preview Utility
+    function previewImage(input, previewElementId) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const preview = document.getElementById(previewElementId);
+        if (preview) {
+          preview.src = URL.createObjectURL(file);
+          preview.style.display = "block";
+          const parentBox = preview.parentElement;
+          if (parentBox && parentBox.classList.contains("preview-stage")) {
+            parentBox.style.display = "block";
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>
 {{ end }}

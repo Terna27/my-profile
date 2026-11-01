@@ -2,39 +2,139 @@
 <link rel="stylesheet" href="/static/css/landing.css">
 <a class="skip-link" href="#about">Skip to content</a>
 <canvas id="hero-particles-canvas" aria-hidden="true"></canvas>
-<header class="home-nav container">
-  <a href="/" class="home-brand"><span aria-hidden="true">&lt;/&gt;</span> {{ .Portfolio.Profile.Name }}</a>
-  <nav aria-label="Main navigation"><a href="#about">About</a><a href="#skills">Skills</a><a href="#projects">Projects</a><a href="#certificates">Credentials</a><a href="#contact">Contact</a></nav>
+
+<!-- Sticky Navigation Header with Accessible Mobile Menu -->
+<header class="site-header">
+  <div class="home-nav container">
+    <a href="/" class="home-brand">
+      <span class="brand-glyph" aria-hidden="true">&lt;/&gt;</span>
+      <span class="brand-name">{{ .Portfolio.Profile.Name }}</span>
+    </a>
+
+    <!-- Desktop Navigation -->
+    <nav class="desktop-nav" aria-label="Main navigation">
+      <a href="#about" class="nav-anchor">About</a>
+      <a href="#skills" class="nav-anchor">Skills</a>
+      <a href="#projects" class="nav-anchor">Projects</a>
+      <a href="#certificates" class="nav-anchor">Credentials</a>
+      <a href="#contact" class="nav-anchor">Contact</a>
+      <a href="/developer" class="nav-action-pill">Developer View ↗</a>
+    </nav>
+
+    <!-- Mobile Hamburger Toggle -->
+    <button type="button" class="mobile-nav-toggle" aria-controls="mobile-nav-menu" aria-expanded="false" aria-label="Toggle navigation menu">
+      <span class="hamburger-bar"></span>
+      <span class="hamburger-bar"></span>
+      <span class="hamburger-bar"></span>
+    </button>
+  </div>
+
+  <!-- Mobile Dropdown Navigation -->
+  <nav id="mobile-nav-menu" class="mobile-nav-dropdown" aria-label="Mobile navigation" hidden>
+    <div class="mobile-nav-inner container">
+      <a href="#about" class="mobile-nav-link">About</a>
+      <a href="#skills" class="mobile-nav-link">Skills</a>
+      <a href="#projects" class="mobile-nav-link">Projects</a>
+      <a href="#certificates" class="mobile-nav-link">Credentials</a>
+      <a href="#contact" class="mobile-nav-link">Contact</a>
+      <div class="mobile-nav-actions">
+        <a href="/developer" class="mobile-action-btn">Developer View ↗</a>
+        <a href="/resume" download class="mobile-action-btn outline">Download Résumé ↓</a>
+      </div>
+    </div>
+  </nav>
 </header>
+
 <main>
-<section id="hero" class="home-hero container" aria-labelledby="home-title">
-  <div class="home-intro">
-    <p class="home-eyebrow">SOFTWARE ENGINEERING &amp; CYBERSECURITY</p>
-    <h1 id="home-title">Thoughtful code.<br><span>Real-world impact.</span></h1>
-    <p class="home-name">Hi, I'm {{ .Portfolio.Profile.Name }}.</p>
-    <p class="home-summary">{{ .Portfolio.Profile.Bio }}</p>
-    <div class="home-actions"><a href="/developer" class="home-button primary">Developer View <span aria-hidden="true">↗</span></a><a href="/resume" download class="home-button">Download Résumé <span aria-hidden="true">↓</span></a></div>
-    <p class="home-availability"><span aria-hidden="true"></span>{{ .Portfolio.Profile.Availability }}</p>
+  <!-- Hero Section -->
+  <section id="hero" class="home-hero container" aria-labelledby="home-title">
+    <div class="home-intro">
+      <p class="home-eyebrow">BACKEND SYSTEMS &amp; AI AUTOMATION</p>
+      <h1 id="home-title">I build backend systems<br><span>and AI automations.</span></h1>
+      <p class="home-name">Hi, I'm {{ .Portfolio.Profile.Name }}.</p>
+      <p class="home-summary">{{ .Portfolio.Profile.Bio }}</p>
+
+      <!-- Primary Calls to Action -->
+      <div class="home-actions">
+        <a href="#projects" class="home-button primary">View My Projects <span aria-hidden="true">↓</span></a>
+        <a href="#contact" class="home-button secondary">Contact Me <span aria-hidden="true">→</span></a>
+      </div>
+
+      <!-- Secondary Actions -->
+      <div class="home-secondary-actions">
+        <a href="/developer" class="home-sublink">Developer View <span aria-hidden="true">↗</span></a>
+        <span class="action-bullet" aria-hidden="true">•</span>
+        <a href="/resume" download class="home-sublink">Download Résumé <span aria-hidden="true">↓</span></a>
+      </div>
+
+      <p class="home-availability">
+        <span class="status-indicator-dot" aria-hidden="true"></span>
+        {{ .Portfolio.Profile.Availability }}
+      </p>
+    </div>
+
+    <!-- Simplified, Sleek Portrait Frame & Five-Photo Carousel -->
+    <div class="portrait-showcase" role="region" aria-roledescription="carousel" aria-label="Portraits and highlights">
+      <div class="portrait-frame">
+        {{ range $i, $photo := .Portfolio.Photos }}
+        <img
+          src="{{ $photo.URL }}"
+          class="portrait-slide{{ if eq $i 0 }} is-active{{ end }}"
+          alt="{{ if $photo.Caption }}{{ $photo.Caption }}{{ else }}{{ $.Portfolio.Profile.Name }} — portrait {{ add $i 1 }}{{ end }}"
+          {{ if eq $i 0 }}aria-hidden="false" fetchpriority="high"{{ else }}aria-hidden="true" loading="lazy"{{ end }}
+          width="720"
+          height="900"
+        />
+        {{ end }}
+      </div>
+
+      {{ if .Portfolio.Skills }}
+      <div class="portrait-card skill-card">
+        <span class="card-eyebrow">IN MY TOOLKIT</span>
+        <strong id="spotlight-skill">{{ (index .Portfolio.Skills 0).Name }}</strong>
+        <span id="spotlight-category">{{ (index .Portfolio.Skills 0).Category }}</span>
+      </div>
+      <div hidden id="carousel-skills">
+        {{ range .Portfolio.Skills }}
+        <span data-name="{{ .Name }}" data-category="{{ .Category }}"></span>
+        {{ end }}
+      </div>
+      {{ end }}
+
+      <div class="portrait-card info-card">
+        <span class="card-symbol" aria-hidden="true">&lt;/&gt;</span>
+        <span>
+          <span class="card-eyebrow">BASED IN</span>
+          <strong>{{ .Portfolio.Profile.Location }}</strong>
+        </span>
+      </div>
+
+      <!-- Slideshow Controls -->
+      <div class="portrait-controls">
+        <span id="portrait-count" aria-live="off">01 / {{ printf "%02d" (len .Portfolio.Photos) }}</span>
+        <div class="portrait-dots" aria-label="Choose a portrait">
+          {{ range $i, $photo := .Portfolio.Photos }}
+          <button
+            type="button"
+            class="portrait-dot{{ if eq $i 0 }} active{{ end }}"
+            aria-label="Show portrait {{ add $i 1 }}"
+            aria-pressed="{{ if eq $i 0 }}true{{ else }}false{{ end }}"
+          ></button>
+          {{ end }}
+        </div>
+        <button type="button" id="portrait-pause" aria-label="Pause portrait rotation" aria-pressed="false">Pause</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="home-divider container">
+    <span>BUILDING WITH PURPOSE &amp; RESILIENCE</span>
+    <a href="#projects">Explore my work ↓</a>
   </div>
-  <div class="portrait-showcase" role="region" aria-roledescription="carousel" aria-label="Portraits and skills">
-    <div class="portrait-decoration" aria-hidden="true"></div>
-    <div class="portrait-frame"><img src="/static/images/profilee.png" class="portrait-slide is-active" alt="{{ .Portfolio.Profile.Name }} — portrait 1" aria-hidden="false" fetchpriority=high width="720" height="900">
-<img src="/static/images/portrait-classic.webp" class="portrait-slide" alt="{{ .Portfolio.Profile.Name }} — portrait 2" aria-hidden="true" loading=lazy width="720" height="900">
-<img src="/static/images/portrait-suit.webp" class="portrait-slide" alt="{{ .Portfolio.Profile.Name }} — portrait 3" aria-hidden="true" loading=lazy width="720" height="900">
-<img src="/static/images/portrait-casual.webp" class="portrait-slide" alt="{{ .Portfolio.Profile.Name }} — portrait 4" aria-hidden="true" loading=lazy width="720" height="900">
-<img src="/static/images/portrait-relaxed.webp" class="portrait-slide" alt="{{ .Portfolio.Profile.Name }} — portrait 5" aria-hidden="true" loading=lazy width="720" height="900"></div>
-    {{ if .Portfolio.Skills }}
-    <div class="portrait-card skill-card"><span class="card-eyebrow">IN MY TOOLKIT</span><strong id="spotlight-skill">{{ (index .Portfolio.Skills 0).Name }}</strong><span id="spotlight-category">{{ (index .Portfolio.Skills 0).Category }}</span></div>
-    <div hidden id="carousel-skills">{{ range .Portfolio.Skills }}<span data-name="{{ .Name }}" data-category="{{ .Category }}"></span>{{ end }}</div>
-    {{ end }}
-    <div class="portrait-card info-card"><span class="card-symbol" aria-hidden="true">&lt;/&gt;</span><span><span class="card-eyebrow">BASED IN</span><strong>{{ .Portfolio.Profile.Location }}</strong></span></div>
-    <div class="portrait-caption"><span>{{ .Portfolio.Profile.Title }}</span></div>
-    <div class="portrait-controls"><span id="portrait-count" aria-live="off">01 / 05</span><div class="portrait-dots" aria-label="Choose a portrait"><button type="button" class="portrait-dot active" aria-label="Show portrait 1" aria-pressed="true"></button><button type="button" class="portrait-dot" aria-label="Show portrait 2" aria-pressed="false"></button><button type="button" class="portrait-dot" aria-label="Show portrait 3" aria-pressed="false"></button><button type="button" class="portrait-dot" aria-label="Show portrait 4" aria-pressed="false"></button><button type="button" class="portrait-dot" aria-label="Show portrait 5" aria-pressed="false"></button></div><button type="button" id="portrait-pause" aria-label="Pause portrait rotation" aria-pressed="false">Pause</button></div>
-  </div>
-</section>
-<div class="home-divider container"><span>BUILDING WITH PURPOSE</span><a href="#projects">Explore my work ↓</a></div>
-{{ template "client-view" . }}
+
+  {{ template "client-view" . }}
 </main>
+
 <script src="/static/js/particles.js" defer></script>
 <script src="/static/js/home.js" defer></script>
 <script src="/static/js/client.js" defer></script>

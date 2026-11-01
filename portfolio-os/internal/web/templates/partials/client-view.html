@@ -1,28 +1,25 @@
 {{ define "client-view" }}
 <section id="client-view" class="client-site">
   <!-- About & Stats Section -->
-  <section id="about" class="about-section">
+  <section id="about" class="about-section" aria-labelledby="about-heading">
     <div class="container about-grid">
       <div class="about-left">
         <div class="pill-badge">ABOUT ME</div>
-        <h2>I'm passionate about creating digital solutions</h2>
-        <p>{{ .Portfolio.Profile.Bio }}</p>
+        <h2 id="about-heading">Engineering resilient backends &amp; intelligent automations</h2>
+        <p class="about-description">{{ .Portfolio.Profile.Bio }}</p>
         <div class="about-meta">
-          <p>📍 <strong>Location:</strong> {{ .Portfolio.Profile.Location }}</p>
-          <p>
-            ⚡ <strong>Availability:</strong> {{ .Portfolio.Profile.Availability
-            }}
-          </p>
+          <p><span class="meta-icon" aria-hidden="true">📍</span> <strong>Location:</strong> {{ .Portfolio.Profile.Location }}</p>
+          <p><span class="meta-icon" aria-hidden="true">⚡</span> <strong>Availability:</strong> {{ .Portfolio.Profile.Availability }}</p>
         </div>
       </div>
 
       <div class="stats-grid">
         {{ range .Portfolio.Statistics }}
         <div class="stat-box">
-          <div class="stat-icon-wrapper">
+          <div class="stat-icon-wrapper" aria-hidden="true">
             <span class="stat-icon">★</span>
           </div>
-          <div>
+          <div class="stat-content">
             <h3>{{ .Value }}</h3>
             <p>{{ .Label }}</p>
           </div>
@@ -32,54 +29,76 @@
     </div>
   </section>
 
-  <!-- Skills Section -->
-  {{ if .Portfolio.Skills }}
-  <section id="skills" class="skills-section">
+  <!-- Skills Section with Grouped Categories -->
+  <section id="skills" class="skills-section" aria-labelledby="skills-heading">
     <div class="container">
       <div class="section-center-head">
-        <span class="pill-badge">MY SKILLS</span>
-        <h2>Technologies I Master</h2>
+        <span class="pill-badge">EXPERTISE &amp; STACK</span>
+        <h2 id="skills-heading">Technical Capabilities</h2>
+        <p class="section-subtitle">Structured proficiencies grouped by architectural focus and deployment domain.</p>
       </div>
 
-      <div class="skills-3col">
-        {{ range $index, $skill := .Portfolio.Skills }}
-        <div class="skill-row-card color-scheme-{{ $index }}">
-          <div class="skill-info">
-            <span class="skill-name">{{ $skill.Name }}</span>
+      <div class="skills-category-grid">
+        {{ range .Portfolio.CategorizedSkills }}
+        <div class="skill-category-card">
+          <div class="category-header">
+            <div class="category-indicator-bar" aria-hidden="true"></div>
+            <div>
+              <h3 class="category-title">{{ .Category }}</h3>
+              <p class="category-desc">{{ .Description }}</p>
+            </div>
           </div>
-          <div class="skill-track"></div>
+          <div class="skill-chips-wrap">
+            {{ range .Skills }}
+            <span class="skill-chip">
+              <span class="chip-dot" aria-hidden="true"></span>
+              <span class="chip-name">{{ .Name }}</span>
+            </span>
+            {{ end }}
+          </div>
         </div>
         {{ end }}
       </div>
     </div>
   </section>
-  {{ end }}
 
   <!-- Featured Projects Section -->
-  <section id="projects" class="projects-section">
+  <section id="projects" class="projects-section" aria-labelledby="projects-heading">
     <div class="container">
       <div class="section-center-head">
-        <span class="pill-badge">FEATURED PROJECTS</span>
-        <h2>Some of My Recent Work</h2>
+        <span class="pill-badge">FEATURED WORK</span>
+        <h2 id="projects-heading">Projects &amp; Architectures</h2>
+        <p class="section-subtitle">Selected systems, services, and modules built for scale, resilience, and real-world utility.</p>
       </div>
 
       <div class="projects-grid-3">
         {{ range $index, $proj := .Portfolio.Projects }}
         <article class="project-showcase-card">
           <div class="proj-card-top">
-            <span class="proj-num">0{{ $index }}</span>
+            <span class="proj-num">0{{ add $index 1 }}</span>
+            <span class="proj-category-pill">SYSTEM</span>
           </div>
-          {{ if $proj.Image }}
+
+          <!-- Project Screenshot with graceful fallback -->
           <div class="proj-img-wrap">
+            {{ if $proj.Image }}
             <img
               src="{{ $proj.Image }}"
-              alt="{{ $proj.Name }}"
+              alt="{{ if $proj.Name }}{{ $proj.Name }}{{ else }}Featured Project{{ end }}"
               loading="lazy"
+              class="proj-screen-img"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
             />
+            {{ end }}
+            <div class="proj-img-fallback" {{ if $proj.Image }}style="display:none;"{{ end }}>
+              <div class="fallback-icon-ring" aria-hidden="true">&lt;/&gt;</div>
+              <strong class="fallback-title">{{ if $proj.Name }}{{ $proj.Name }}{{ else }}Production System{{ end }}</strong>
+              <span class="fallback-note">Architecture Module</span>
+            </div>
           </div>
-          {{ end }}
+
           <div class="proj-body">
-            <h3>{{ $proj.Name }}</h3>
+            <h3>{{ if $proj.Name }}{{ $proj.Name }}{{ else }}Production Backend Service{{ end }}</h3>
             <p>{{ $proj.Description }}</p>
 
             {{ if $proj.Technologies }}
@@ -95,18 +114,21 @@
               <a
                 href="{{ $proj.URL }}"
                 target="_blank"
-                rel="noopener"
-                class="link-arrow"
-                >View Project ↗</a
+                rel="noopener noreferrer"
+                class="btn-project-link"
               >
-              {{ end }} {{ if $proj.GitHub }}
+                Live Demo <span aria-hidden="true">↗</span>
+              </a>
+              {{ end }}
+              {{ if $proj.GitHub }}
               <a
                 href="{{ $proj.GitHub }}"
                 target="_blank"
-                rel="noopener"
-                class="link-arrow"
-                >Source Code ↗</a
+                rel="noopener noreferrer"
+                class="btn-project-link secondary"
               >
+                Source Code <span aria-hidden="true">↗</span>
+              </a>
               {{ end }}
             </div>
           </div>
@@ -120,29 +142,53 @@
 
   <!-- Certificates Section -->
   {{ if .Portfolio.Certificates }}
-  <section id="certificates" class="skills-section">
+  <section id="certificates" class="certificates-section" aria-labelledby="certificates-heading">
     <div class="container">
       <div class="section-center-head">
-        <span class="pill-badge">CREDENTIALS</span>
-        <h2>Certifications &amp; Licenses</h2>
+        <span class="pill-badge">CREDENTIALS &amp; LICENSES</span>
+        <h2 id="certificates-heading">Verified Certifications</h2>
+        <p class="section-subtitle">Professional qualifications and technical credentials.</p>
       </div>
 
       <div class="certificates-grid">
         {{ range .Portfolio.Certificates }}
         <div class="certificate-card">
+          <!-- Compact Thumbnail / Fallback Box -->
           {{ if .Image }}
           <div
-            class="cert-image-wrapper"
+            class="cert-image-wrapper{{ if isCloudinary .Image }} cert-fallback-box{{ end }}"
+            {{ if not (isCloudinary .Image) }}
             onclick="openCertModal('{{ .Image }}', '{{ .Title }}', '{{ .Issuer }}')"
+            tabindex="0"
+            role="button"
+            aria-label="Expand certificate: {{ .Title }}"
+            onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openCertModal('{{ .Image }}', '{{ .Title }}', '{{ .Issuer }}'); }"
+            {{ end }}
           >
+            {{ if isCloudinary .Image }}
+            <div class="cert-placeholder">
+              <span class="cert-badge-glyph" aria-hidden="true">📜</span>
+              <span class="cert-badge-label">Verified Credential</span>
+              <small class="cert-badge-hint">Record on file</small>
+            </div>
+            {{ else }}
             <img
               src="{{ .Image }}"
               alt="{{ .Title }}"
               class="cert-img"
               loading="lazy"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
             />
-            <div class="cert-zoom-overlay">
+            <div class="cert-zoom-overlay" aria-hidden="true">
               <span>🔍 Expand</span>
+            </div>
+            {{ end }}
+          </div>
+          {{ else }}
+          <div class="cert-image-wrapper cert-fallback-box">
+            <div class="cert-placeholder">
+              <span class="cert-badge-glyph" aria-hidden="true">📜</span>
+              <span class="cert-badge-label">Verified Credential</span>
             </div>
           </div>
           {{ end }}
@@ -171,10 +217,9 @@
               >
                 Verify Credential ↗
               </a>
-              {{ end }} {{ if .CredentialID }}
-              <span class="cert-id" title="Credential ID"
-                >ID: {{ .CredentialID }}</span
-              >
+              {{ end }}
+              {{ if .CredentialID }}
+              <span class="cert-id" title="Credential ID">ID: {{ .CredentialID }}</span>
               {{ end }}
             </div>
           </div>
@@ -189,9 +234,12 @@
     id="cert-lightbox-modal"
     class="cert-modal"
     onclick="closeCertModal(event)"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Certificate Image Viewer"
   >
     <div class="cert-modal-dialog">
-      <button class="cert-modal-close" onclick="closeCertModalDirect()">
+      <button type="button" class="cert-modal-close" onclick="closeCertModalDirect()" aria-label="Close modal">
         &times;
       </button>
       <div class="cert-modal-body">
@@ -205,35 +253,37 @@
   </div>
   {{ end }}
 
-  <!-- Bottom Contact & Social Footer -->
-  <footer id="contact" class="footer-wrapper">
+  <!-- Contact & Social Footer -->
+  <footer id="contact" class="footer-wrapper" aria-labelledby="contact-heading">
     <div class="container footer-grid-3">
       <div class="footer-col-1">
-        <span class="pill-badge">LET'S WORK TOGETHER</span>
-        <h2>Have a project in mind?</h2>
+        <span class="pill-badge">LET'S CONNECT</span>
+        <h2 id="contact-heading">Have a system in mind?</h2>
         <p>
-          I'm always open to discuss new projects, creative ideas or
-          opportunities to be part of your vision.
+          I'm always open to discuss backend engineering, system architecture,
+          AI automation workflows, or security protocol consulting.
         </p>
-        {{ if .Portfolio.Contact.Phone }}
-        <a
-          href="https://wa.me/{{ .Portfolio.Contact.Phone }}?text=Hi%20{{ .Portfolio.Profile.Name }},%20I%20saw%20your%20portfolio%20and%20would%20like%20to%20get%20in%20touch%20regarding%20a%20project!"
-          class="btn btn-primary"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Get In Touch 💬
-        </a>
-        {{ else }}
-        <a href="mailto:{{ .Portfolio.Contact.Email }}" class="btn btn-primary">
-          Get In Touch ↗
-        </a>
-        {{ end }}
+
+        <div class="contact-buttons-wrap">
+          {{ if .Portfolio.Contact.Phone }}
+          <a
+            href="https://wa.me/{{ .Portfolio.Contact.Phone }}?text=Hi%20{{ .Portfolio.Profile.Name }},%20I%20saw%20your%20portfolio%20and%20would%20like%20to%20discuss%20a%20project!"
+            class="btn btn-primary"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Chat on WhatsApp 💬
+          </a>
+          {{ end }}
+          <a href="mailto:{{ cleanEmail .Portfolio.Contact.Email }}" class="btn btn-outline">
+            Send Email ✉
+          </a>
+        </div>
       </div>
 
       <div class="footer-col-2">
         <div class="quote-card">
-          <span class="quote-icon">“</span>
+          <span class="quote-icon" aria-hidden="true">“</span>
           <p class="quote-text">{{ .Portfolio.Profile.Bio }}</p>
           <div class="quote-author">
             <strong>{{ .Portfolio.Profile.Name }}</strong>
@@ -243,16 +293,14 @@
       </div>
 
       <div class="footer-col-3">
-        <span class="footer-label">CONTACT & SOCIAL</span>
+        <span class="footer-label">DIRECT CONTACT &amp; SOCIAL</span>
         <p class="contact-line">
-          ✉
-          <a href="mailto:{{ .Portfolio.Contact.Email }}"
-            >{{ .Portfolio.Contact.Email }}</a
-          >
+          <span class="contact-icon" aria-hidden="true">✉</span>
+          <a href="mailto:{{ cleanEmail .Portfolio.Contact.Email }}">{{ cleanEmail .Portfolio.Contact.Email }}</a>
         </p>
         {{ if .Portfolio.Contact.Phone }}
         <p class="contact-line">
-          💬
+          <span class="contact-icon" aria-hidden="true">💬</span>
           <a
             href="https://wa.me/{{ .Portfolio.Contact.Phone }}?text=Hi%20{{ .Portfolio.Profile.Name }}!"
             target="_blank"
@@ -262,14 +310,17 @@
           </a>
         </p>
         {{ end }}
-        <p class="contact-line">📍 {{ .Portfolio.Contact.Location }}</p>
+        <p class="contact-line">
+          <span class="contact-icon" aria-hidden="true">📍</span>
+          {{ .Portfolio.Contact.Location }}
+        </p>
 
         {{ if .Portfolio.SocialLinks }}
-        <div class="social-pills">
+        <div class="social-pills" aria-label="Social links">
           {{ range .Portfolio.SocialLinks }}
-          <a href="{{ .URL }}" target="_blank" rel="noopener" class="soc-icon"
-            >{{ .Platform }}</a
-          >
+          <a href="{{ .URL }}" target="_blank" rel="noopener noreferrer" class="soc-icon">
+            {{ .Platform }} ↗
+          </a>
           {{ end }}
         </div>
         {{ end }}
@@ -278,7 +329,7 @@
 
     <div class="container sub-footer">
       <p>&copy; {{ .Portfolio.Profile.Name }}. All rights reserved.</p>
-      <p>Made with ❤️ by {{ .Portfolio.Profile.Name }}</p>
+      <p>Built with Go &amp; Modern Web Standards</p>
     </div>
   </footer>
 </section>

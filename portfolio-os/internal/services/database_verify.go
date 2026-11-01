@@ -19,6 +19,7 @@ func VerifyPortfolioData(db *gorm.DB) error {
 	var projectsCount int64
 	var contactsCount int64
 	var socialLinksCount int64
+	var photosCount int64
 
 	if err := db.Model(&models.Profile{}).Count(&profileCount).Error; err != nil {
 		return fmt.Errorf("failed to count profiles: %w", err)
@@ -56,6 +57,10 @@ func VerifyPortfolioData(db *gorm.DB) error {
 		return fmt.Errorf("failed to count social links: %w", err)
 	}
 
+	if err := db.Model(&models.Photo{}).Count(&photosCount).Error; err != nil {
+		return fmt.Errorf("failed to count photos: %w", err)
+	}
+
 	log.Println("Portfolio database verification:")
 	log.Printf("Profiles: %d", profileCount)
 	log.Printf("Statistics: %d", statisticsCount)
@@ -66,7 +71,7 @@ func VerifyPortfolioData(db *gorm.DB) error {
 	log.Printf("Projects: %d", projectsCount)
 	log.Printf("Contacts: %d", contactsCount)
 	log.Printf("Social Links: %d", socialLinksCount)
+	log.Printf("Photos: %d", photosCount)
 
 	return nil
-
 }

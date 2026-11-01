@@ -16,17 +16,17 @@
 
   <div class="vscode-workspace">
     <!-- Activity Bar (Far Left Icons) -->
-    <!-- Activity Bar (Far Left Icons) -->
-    <aside class="activity-bar">
+    <aside class="activity-bar" aria-label="Editor Activity Bar">
       <div class="activity-top">
-        <button class="activity-btn active" data-tab="home" title="Explorer (Home.go)">📄</button>
-        <button class="activity-btn" data-tab="skills" title="Skills & Capabilities (Skills.go)">🔍</button>
-        <button class="activity-btn" data-tab="projects" title="Source Control & Projects (Projects.go)">🌿</button>
-        <button class="activity-btn" data-tab="education" title="Academic Background (Education.go)">🎓</button>
-        <button class="activity-btn" data-tab="certificates" title="Packages & Certifications (Certificates.go)">📦</button>
+        <button type="button" class="activity-btn active" data-tab="home" title="Explorer (Home.go)" aria-label="Open Home pane">📄</button>
+        <button type="button" class="activity-btn" data-tab="about" title="About (AboutMe.go)" aria-label="Open About pane">👤</button>
+        <button type="button" class="activity-btn" data-tab="skills" title="Skills &amp; Capabilities (Skills.go)" aria-label="Open Skills pane">🔍</button>
+        <button type="button" class="activity-btn" data-tab="projects" title="Source Control &amp; Projects (Projects.go)" aria-label="Open Projects pane">🌿</button>
+        <button type="button" class="activity-btn" data-tab="education" title="Academic Background (Education.go)" aria-label="Open Education pane">🎓</button>
+        <button type="button" class="activity-btn" data-tab="certificates" title="Packages &amp; Certifications (Certificates.go)" aria-label="Open Certificates pane">📦</button>
       </div>
       <div class="activity-bottom">
-        <button class="activity-btn" data-tab="contact" title="Settings & Contact (Contact.go)">⚙️</button>
+        <button type="button" class="activity-btn" data-tab="contact" title="Settings &amp; Contact (Contact.go)" aria-label="Open Contact pane">⚙️</button>
       </div>
     </aside>
 
@@ -37,29 +37,29 @@
       </div>
       <div class="explorer-section">
         <div class="folder-title">
-          <span class="arrow-down">▾</span>
-          <strong>{{ .Portfolio.Profile.Name }}'S-PORTFOLIO</strong>
+          <span class="arrow-down" aria-hidden="true">▾</span>
+          <strong>PORTFOLIO-WORKSPACE</strong>
         </div>
         <ul class="file-list">
-          <li class="file-item active" data-tab="home">
+          <li class="file-item active" data-tab="home" tabindex="0">
             <span class="file-icon icon-go"></span> Home.go
           </li>
-          <li class="file-item" data-tab="about">
+          <li class="file-item" data-tab="about" tabindex="0">
             <span class="file-icon icon-go"></span> AboutMe.go
           </li>
-          <li class="file-item" data-tab="skills">
+          <li class="file-item" data-tab="skills" tabindex="0">
             <span class="file-icon icon-go"></span> Skills.go
           </li>
-          <li class="file-item" data-tab="education">
+          <li class="file-item" data-tab="education" tabindex="0">
             <span class="file-icon icon-go"></span> Education.go
           </li>
-          <li class="file-item" data-tab="projects">
+          <li class="file-item" data-tab="projects" tabindex="0">
             <span class="file-icon icon-go"></span> Projects.go
           </li>
-          <li class="file-item" data-tab="certificates">
+          <li class="file-item" data-tab="certificates" tabindex="0">
             <span class="file-icon icon-go"></span> Certificates.go
           </li>
-          <li class="file-item" data-tab="contact">
+          <li class="file-item" data-tab="contact" tabindex="0">
             <span class="file-icon icon-go"></span> Contact.go
           </li>
         </ul>
@@ -68,7 +68,7 @@
       <!-- Social File Explorer Footer -->
       <div class="explorer-section social-section">
         <div class="folder-title">
-          <span class="arrow-down">▾</span>
+          <span class="arrow-down" aria-hidden="true">▾</span>
           <strong>SOCIAL</strong>
         </div>
         <ul class="file-list">
@@ -86,37 +86,37 @@
     <!-- Main Code Editor Stage -->
     <main class="editor-stage">
       <!-- Tab Bar -->
-      <div class="editor-tabs-bar">
-        <button type="button" class="tab-item active" data-tab="home" aria-pressed="true">
-          <span class="file-icon icon-go"></span> Home.go <span class="tab-close">×</span>
+      <div class="editor-tabs-bar" role="tablist" aria-label="Editor tabs">
+        <button type="button" class="tab-item active" data-tab="home" role="tab" aria-selected="true" aria-controls="pane-home">
+          <span class="file-icon icon-go"></span> Home.go <span class="tab-close" aria-hidden="true">×</span>
         </button>
-        <button type="button" class="tab-item" data-tab="about" aria-pressed="false">
-          <span class="file-icon icon-go"></span> AboutMe.go <span class="tab-close">×</span>
+        <button type="button" class="tab-item" data-tab="about" role="tab" aria-selected="false" aria-controls="pane-about">
+          <span class="file-icon icon-go"></span> AboutMe.go <span class="tab-close" aria-hidden="true">×</span>
         </button>
-        <button type="button" class="tab-item" data-tab="skills" aria-pressed="false">
-          <span class="file-icon icon-go"></span> Skills.go <span class="tab-close">×</span>
+        <button type="button" class="tab-item" data-tab="skills" role="tab" aria-selected="false" aria-controls="pane-skills">
+          <span class="file-icon icon-go"></span> Skills.go <span class="tab-close" aria-hidden="true">×</span>
         </button>
-        <button type="button" class="tab-item" data-tab="education" aria-pressed="false">
-          <span class="file-icon icon-go"></span> Education.go <span class="tab-close">×</span>
+        <button type="button" class="tab-item" data-tab="education" role="tab" aria-selected="false" aria-controls="pane-education">
+          <span class="file-icon icon-go"></span> Education.go <span class="tab-close" aria-hidden="true">×</span>
         </button>
-        <button type="button" class="tab-item" data-tab="projects" aria-pressed="false">
-          <span class="file-icon icon-go"></span> Projects.go <span class="tab-close">×</span>
+        <button type="button" class="tab-item" data-tab="projects" role="tab" aria-selected="false" aria-controls="pane-projects">
+          <span class="file-icon icon-go"></span> Projects.go <span class="tab-close" aria-hidden="true">×</span>
         </button>
-        <button type="button" class="tab-item" data-tab="certificates" aria-pressed="false">
-          <span class="file-icon icon-go"></span> Certificates.go <span class="tab-close">×</span>
+        <button type="button" class="tab-item" data-tab="certificates" role="tab" aria-selected="false" aria-controls="pane-certificates">
+          <span class="file-icon icon-go"></span> Certificates.go <span class="tab-close" aria-hidden="true">×</span>
         </button>
-        <button type="button" class="tab-item" data-tab="contact" aria-pressed="false">
-          <span class="file-icon icon-go"></span> Contact.go <span class="tab-close">×</span>
+        <button type="button" class="tab-item" data-tab="contact" role="tab" aria-selected="false" aria-controls="pane-contact">
+          <span class="file-icon icon-go"></span> Contact.go <span class="tab-close" aria-hidden="true">×</span>
         </button>
       </div>
 
       <!-- Editor Viewport -->
       <div class="editor-viewport">
         
-        <!-- ================= PERMANENT PINNED HOME BLOCK ================= -->
+        <!-- Pinned Developer Header Block -->
         <section class="pinned-home-pane" id="pinned-home">
           <div class="code-comment glow-typewriter" data-text="// Hi, I'm a Developer">// Hi, I'm a Developer</div>
-          <h1 class="pane-headline">Welcome to my portfolio</h1>
+          <h1 class="pane-headline">I build backend systems and AI automations</h1>
           <div class="component-tag">&lt;Portfolio /&gt;</div>
 
           <div class="home-split-view">
@@ -127,41 +127,62 @@
 <span class="syn-kw">type</span> <span class="syn-var">Developer</span> <span class="syn-kw">struct</span> {
   <span class="syn-key">Name</span>         <span class="syn-kw">string</span>   <span class="syn-str">`json:"name"`</span>
   <span class="syn-key">Title</span>        <span class="syn-kw">string</span>   <span class="syn-str">`json:"title"`</span>
+  <span class="syn-key">Focus</span>        <span class="syn-kw">string</span>   <span class="syn-str">`json:"focus"`</span>
   <span class="syn-key">Skills</span>       []<span class="syn-kw">string</span> <span class="syn-str">`json:"skills"`</span>
-  <span class="syn-key">Passion</span>      <span class="syn-kw">string</span>   <span class="syn-str">`json:"passion"`</span>
   <span class="syn-key">Availability</span> <span class="syn-kw">string</span>   <span class="syn-str">`json:"availability"`</span>
 }
 
 <span class="syn-kw">var</span> dev = <span class="syn-var">Developer</span>{
   <span class="syn-key">Name</span>:         <span class="syn-str">"{{ .Portfolio.Profile.Name }}"</span>,
   <span class="syn-key">Title</span>:        <span class="syn-str">"{{ .Portfolio.Profile.Title }}"</span>,
+  <span class="syn-key">Focus</span>:        <span class="syn-str">"Backend Systems, AI Automation &amp; Threat Defense"</span>,
   <span class="syn-key">Skills</span>:       []<span class="syn-kw">string</span>{
     {{ range $i, $e := .Portfolio.Skills }}{{ if eq $i 5 }}
     {{ end }}{{ if $i }}, {{ end }}<span class="syn-str">"{{ $e.Name }}"</span>{{ end }},
   },
-  <span class="syn-key">Passion</span>:      <span class="syn-str">"Building high-performance distributed web systems"</span>,
   <span class="syn-key">Availability</span>: <span class="syn-str">"{{ .Portfolio.Profile.Availability }}"</span>,
 }</code></pre>
-              <a href="/resume" download class="download-cv-btn">Download CV 📥</a>
+              <div class="code-actions-bar">
+                <a href="/resume" download class="download-cv-btn">Download CV 📥</a>
+                <a href="#projects" class="download-cv-btn outline-btn" onclick="document.querySelector('.tab-item[data-tab=\'projects\']').click()">View Projects ↗</a>
+              </div>
             </div>
 
-            <!-- Shared portrait rotation and controls, matching the homepage. -->
+            <!-- Shared portrait rotation and controls, matching the homepage -->
             <div class="dev-portrait-card portrait-showcase" role="region" aria-roledescription="carousel" aria-label="Portraits">
               <div class="portrait-image-wrapper" role="button" tabindex="0" aria-label="Expand current portrait"
                 onclick="openDevModal(this.querySelector('.is-active').src, '{{ .Portfolio.Profile.Name }}', '{{ .Portfolio.Profile.Title }}')"
                 onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); this.click(); }">
-                <img src="/static/images/profilee.png" class="portrait-slide is-active" alt="{{ .Portfolio.Profile.Name }} — portrait 1" aria-hidden="false" fetchpriority=high width="720" height="900">
-<img src="/static/images/portrait-classic.webp" class="portrait-slide" alt="{{ .Portfolio.Profile.Name }} — portrait 2" aria-hidden="true" loading=lazy width="720" height="900">
-<img src="/static/images/portrait-suit.webp" class="portrait-slide" alt="{{ .Portfolio.Profile.Name }} — portrait 3" aria-hidden="true" loading=lazy width="720" height="900">
-<img src="/static/images/portrait-casual.webp" class="portrait-slide" alt="{{ .Portfolio.Profile.Name }} — portrait 4" aria-hidden="true" loading=lazy width="720" height="900">
-<img src="/static/images/portrait-relaxed.webp" class="portrait-slide" alt="{{ .Portfolio.Profile.Name }} — portrait 5" aria-hidden="true" loading=lazy width="720" height="900">
+                {{ range $i, $photo := .Portfolio.Photos }}
+                <img
+                  src="{{ $photo.URL }}"
+                  class="portrait-slide{{ if eq $i 0 }} is-active{{ end }}"
+                  alt="{{ if $photo.Caption }}{{ $photo.Caption }}{{ else }}{{ $.Portfolio.Profile.Name }} — portrait {{ add $i 1 }}{{ end }}"
+                  {{ if eq $i 0 }}aria-hidden="false" fetchpriority="high"{{ else }}aria-hidden="true" loading="lazy"{{ end }}
+                  width="720"
+                  height="900"
+                />
+                {{ end }}
                 <div class="portrait-zoom-hint">🔍 Expand</div>
                 <div class="portrait-overlay-badge">
                   <h4 class="portrait-name">{{ .Portfolio.Profile.Name }}</h4>
                   <p class="portrait-role">{{ .Portfolio.Profile.Title }}</p>
                 </div>
               </div>
-              <div class="portrait-controls"><span id="portrait-count" aria-live="off">01 / 05</span><div class="portrait-dots" aria-label="Choose a portrait"><button type="button" class="portrait-dot active" aria-label="Show portrait 1" aria-pressed="true"></button><button type="button" class="portrait-dot" aria-label="Show portrait 2" aria-pressed="false"></button><button type="button" class="portrait-dot" aria-label="Show portrait 3" aria-pressed="false"></button><button type="button" class="portrait-dot" aria-label="Show portrait 4" aria-pressed="false"></button><button type="button" class="portrait-dot" aria-label="Show portrait 5" aria-pressed="false"></button></div><button type="button" id="portrait-pause" aria-label="Pause portrait rotation" aria-pressed="false">Pause</button></div>
+              <div class="portrait-controls">
+                <span id="portrait-count" aria-live="off">01 / {{ printf "%02d" (len .Portfolio.Photos) }}</span>
+                <div class="portrait-dots" aria-label="Choose a portrait">
+                  {{ range $i, $photo := .Portfolio.Photos }}
+                  <button
+                    type="button"
+                    class="portrait-dot{{ if eq $i 0 }} active{{ end }}"
+                    aria-label="Show portrait {{ add $i 1 }}"
+                    aria-pressed="{{ if eq $i 0 }}true{{ else }}false{{ end }}"
+                  ></button>
+                  {{ end }}
+                </div>
+                <button type="button" id="portrait-pause" aria-label="Pause portrait rotation" aria-pressed="false">Pause</button>
+              </div>
             </div>
           </div>
 
@@ -179,18 +200,19 @@
         <!-- Divider Line between Pinned Header and Selected File Content -->
         <hr class="ide-section-divider" />
 
-        <!-- ================= DYNAMIC SUB-PANES (RENDERED DIRECTLY BELOW) ================= -->
+        <!-- Dynamic Sub-Panes -->
         <div class="dynamic-subpanes-wrapper">
 
-          <!-- 1. EMPTY / DEFAULT HOME SUBPANE -->
-          <section class="tab-content active" id="pane-home">
+          <!-- 1. HOME SUBPANE -->
+          <section class="tab-content active" id="pane-home" role="tabpanel" aria-labelledby="tab-home">
             <div class="editor-file-status">
               <span class="syn-kw">// Current File:</span> <code>Home.go</code> <span class="status-badge">active</span>
             </div>
+            <p class="ide-hint-text">Select any file tab above or via the explorer sidebar to view detailed models and records.</p>
           </section>
 
           <!-- 2. ABOUT PANE -->
-          <section class="tab-content" id="pane-about">
+          <section class="tab-content" id="pane-about" role="tabpanel">
             <div class="code-comment glow-typewriter" data-text="// About Me">// About Me</div>
             <h2 class="subpane-headline">Engineering Bio</h2>
             
@@ -203,44 +225,42 @@
             </div>
           </section>
 
-          <!-- 3. SKILLS PANE -->
-          <section class="tab-content" id="pane-skills">
-            <div class="code-comment glow-typewriter" data-text="// Skills">// Skills</div>
-           
-            <p class="pane-subtext">A comprehensive overview of my technical skills and stack mastery</p>
+          <!-- 3. SKILLS PANE with Grouped Capabilities -->
+          <section class="tab-content" id="pane-skills" role="tabpanel">
+            <div class="code-comment glow-typewriter" data-text="// Technical Stack &amp; Capabilities">// Technical Stack &amp; Capabilities</div>
+            <h2 class="subpane-headline">Categorized Proficiencies</h2>
+            <p class="pane-subtext">Structured capabilities grouped by architecture, systems, automation, and tooling.</p>
 
-            <div class="skills-ide-grid">
-              <div class="ide-panel-box">
-                <div class="panel-header glow-typewriter" data-text="// Core Capabilities">// Core Capabilities</div>
-                <div class="skills-meter-list">
-                  {{ range $index, $skill := .Portfolio.Skills }}
-                  <div class="skill-meter-row color-scheme-{{ $index }}">
-                    <div class="meter-info">
-                      <span class="meter-name">{{ $skill.Name }}</span>
-                      
-                    </div>
-                    <div class="meter-bar">
-                     
-                    </div>
-                  </div>
+            <div class="ide-skills-grouped-grid">
+              {{ range .Portfolio.CategorizedSkills }}
+              <div class="ide-panel-box category-panel">
+                <div class="panel-header glow-typewriter" data-text="// {{ .Category }}">// {{ .Category }}</div>
+                <p class="category-panel-desc">{{ .Description }}</p>
+                <div class="ide-skill-tags-list">
+                  {{ range .Skills }}
+                  <span class="ide-skill-tag">
+                    <span class="tag-bullet" aria-hidden="true">›</span>
+                    {{ .Name }}
+                  </span>
                   {{ end }}
                 </div>
               </div>
+              {{ end }}
             </div>
           </section>
 
           <!-- 4. EDUCATION PANE -->
-          <section class="tab-content" id="pane-education">
+          <section class="tab-content" id="pane-education" role="tabpanel">
             <div class="code-comment glow-typewriter" data-text="// Education">// Education</div>
             <h2 class="subpane-headline">Academic Background</h2>
-            <p class="pane-subtext">My educational journey and continuous learning path</p>
+            <p class="pane-subtext">Educational journey and formal certifications.</p>
 
             <div class="ide-card-stack">
               {{ range .Portfolio.Education }}
               <div class="ide-panel-box edu-panel">
                 <div class="edu-top">
                   <span class="edu-degree">🎓 {{ .Degree }} in {{ .Field }}</span>
-                  <span class="edu-years">📅 {{ .StartYear }} - {{ .EndYear }}</span>
+                  {{ if .StartYear }}<span class="edu-years">📅 {{ .StartYear }} - {{ if .EndYear }}{{ .EndYear }}{{ else }}Present{{ end }}</span>{{ end }}
                 </div>
                 <h4 class="edu-inst">{{ .Institution }}</h4>
                 <p class="edu-desc">{{ .Description }}</p>
@@ -250,20 +270,29 @@
           </section>
 
           <!-- 5. PROJECTS PANE -->
-          <section class="tab-content" id="pane-projects">
-            <div class="code-comment glow-typewriter" data-text="// Projects">// Projects</div>
-            <h2 class="subpane-headline">Shipped Applications</h2>
+          <section class="tab-content" id="pane-projects" role="tabpanel">
+            <div class="code-comment glow-typewriter" data-text="// Production Projects &amp; Architectures">// Production Projects &amp; Architectures</div>
+            <h2 class="subpane-headline">Shipped Systems</h2>
             
             <div class="ide-projects-grid">
               {{ range .Portfolio.Projects }}
               <div class="ide-project-card">
-                {{ if .Image }}
                 <div class="ide-proj-img-wrap">
-                  <img src="{{ .Image }}" alt="{{ .Name }}" />
+                  {{ if .Image }}
+                  <img
+                    src="{{ .Image }}"
+                    alt="{{ if .Name }}{{ .Name }}{{ else }}Project{{ end }}"
+                    loading="lazy"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                  />
+                  {{ end }}
+                  <div class="ide-fallback-box" {{ if .Image }}style="display:none;"{{ end }}>
+                    <span class="ide-glyph" aria-hidden="true">&lt;/&gt;</span>
+                    <strong>{{ if .Name }}{{ .Name }}{{ else }}System Component{{ end }}</strong>
+                  </div>
                 </div>
-                {{ end }}
                 <div class="ide-proj-body">
-                  <h3>{{ .Name }}</h3>
+                  <h3>{{ if .Name }}{{ .Name }}{{ else }}Production Backend Service{{ end }}</h3>
                   <p>{{ .Description }}</p>
                   <div class="proj-tech-tags">
                     {{ range .Technologies }}
@@ -271,8 +300,8 @@
                     {{ end }}
                   </div>
                   <div class="ide-proj-actions">
-                    {{ if .URL }}<a href="{{ .URL }}" target="_blank" rel="noopener">Live Demo ↗</a>{{ end }}
-                    {{ if .GitHub }}<a href="{{ .GitHub }}" target="_blank" rel="noopener">GitHub ↗</a>{{ end }}
+                    {{ if .URL }}<a href="{{ .URL }}" target="_blank" rel="noopener noreferrer">Live Demo ↗</a>{{ end }}
+                    {{ if .GitHub }}<a href="{{ .GitHub }}" target="_blank" rel="noopener noreferrer">GitHub ↗</a>{{ end }}
                   </div>
                 </div>
               </div>
@@ -281,25 +310,34 @@
           </section>
 
           <!-- 6. CERTIFICATES PANE -->
-          <section class="tab-content" id="pane-certificates">
-            <div class="code-comment glow-typewriter" data-text="// Credentials">// Credentials</div>
+          <section class="tab-content" id="pane-certificates" role="tabpanel">
+            <div class="code-comment glow-typewriter" data-text="// Verified Credentials">// Verified Credentials</div>
             <h2 class="subpane-headline">Certifications &amp; Licenses</h2>
             
             <div class="ide-cert-grid">
               {{ range .Portfolio.Certificates }}
               <div class="ide-cert-card">
-                {{ if .Image }}
                 <div class="ide-cert-img-box">
-                  <img src="{{ .Image }}" alt="{{ .Title }}" />
+                  {{ if and .Image (not (isCloudinary .Image)) }}
+                  <img
+                    src="{{ .Image }}"
+                    alt="{{ .Title }}"
+                    loading="lazy"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                  />
+                  {{ end }}
+                  <div class="ide-cert-fallback" {{ if and .Image (not (isCloudinary .Image)) }}style="display:none;"{{ end }}>
+                    <span aria-hidden="true">📜</span>
+                    <small>Verified Credential</small>
+                  </div>
                 </div>
-                {{ end }}
                 <div class="ide-cert-details">
                   <span class="cert-org">{{ .Issuer }}</span>
                   <h4>{{ .Title }}</h4>
                   {{ if .IssueDate }}<span class="cert-date">Issued: {{ .IssueDate }}</span>{{ end }}
                   {{ if .Description }}<p>{{ .Description }}</p>{{ end }}
                   {{ if .VerificationURL }}
-                  <a href="{{ .VerificationURL }}" target="_blank" rel="noopener" class="cert-verify-link">Verify Credential ↗</a>
+                  <a href="{{ .VerificationURL }}" target="_blank" rel="noopener noreferrer" class="cert-verify-link">Verify Credential ↗</a>
                   {{ end }}
                 </div>
               </div>
@@ -307,8 +345,8 @@
             </div>
           </section>
 
-         <!-- 7. CONTACT PANE -->
-          <section class="tab-content" id="pane-contact">
+          <!-- 7. CONTACT PANE -->
+          <section class="tab-content" id="pane-contact" role="tabpanel">
             <div class="code-comment glow-typewriter" data-text="// Contact">// Contact</div>
             <h2 class="subpane-headline">Let's Connect</h2>
             
@@ -316,16 +354,14 @@
               <pre><code><span class="syn-kw">package</span> main
 
 <span class="syn-kw">var</span> ContactDetails = <span class="syn-kw">map</span>[<span class="syn-kw">string</span>]<span class="syn-kw">string</span>{
-  <span class="syn-key">"email"</span>:    <span class="syn-str">"{{ .Portfolio.Contact.Email }}"</span>,
+  <span class="syn-key">"email"</span>:    <span class="syn-str">"{{ cleanEmail .Portfolio.Contact.Email }}"</span>,
   <span class="syn-key">"phone"</span>:    <span class="syn-str">"{{ .Portfolio.Contact.Phone }}"</span>,
-  <span class="syn-key">"whatsapp"</span>: <span class="syn-str">"{{ .Portfolio.Contact.Phone }}"</span>,
   <span class="syn-key">"location"</span>: <span class="syn-str">"{{ .Portfolio.Contact.Location }}"</span>,
 }</code></pre>
               
               <div class="contact-action-group">
-                <!-- Direct Email Client Link -->
                 <a 
-                  href="mailto:{{ .Portfolio.Contact.Email }}?subject=Inquiry%20from%20Portfolio&body=Hi%20{{ .Portfolio.Profile.Name }},%0D%0A%0D%0AI%20came%20across%20your%20portfolio%20and%20would%20like%20to%20discuss..." 
+                  href="mailto:{{ cleanEmail .Portfolio.Contact.Email }}?subject=Inquiry%20from%20Portfolio&amp;body=Hi%20{{ .Portfolio.Profile.Name }},%0D%0A%0D%0AI%20came%20across%20your%20portfolio%20and%20would%20like%20to%20discuss..." 
                   class="download-cv-btn send-email-btn"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -333,17 +369,6 @@
                   Send Email ✉
                 </a>
 
-                <!-- Gmail Webmail Link -->
-                <a 
-                  href="https://mail.google.com/mail/?view=cm&fs=1&to={{ .Portfolio.Contact.Email }}&su=Inquiry+from+Portfolio" 
-                  class="download-cv-btn gmail-btn"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Open in Gmail ↗
-                </a>
-
-                <!-- Direct WhatsApp Chat Link -->
                 {{ if .Portfolio.Contact.Phone }}
                 <a 
                   href="https://wa.me/{{ .Portfolio.Contact.Phone }}?text=Hi%20{{ .Portfolio.Profile.Name }},%20I%20saw%20your%20portfolio%20and%20would%20like%20to%20connect!" 
@@ -355,6 +380,7 @@
                 </a>
                 {{ end }}
               </div>
+
               {{ if .Portfolio.SocialLinks }}
               <nav class="dev-contact-socials" aria-label="Social profiles">
                 {{ range .Portfolio.SocialLinks }}
@@ -370,10 +396,10 @@
     </main>
   </div>
 
-  <!-- Developer Portrait Lightbox Modal (60%+ Viewport) -->
-  <div id="dev-portrait-modal" class="dev-modal" onclick="closeDevModal(event)">
+  <!-- Developer Portrait Lightbox Modal -->
+  <div id="dev-portrait-modal" class="dev-modal" onclick="closeDevModal(event)" role="dialog" aria-modal="true" aria-label="Portrait Viewer">
     <div class="dev-modal-dialog">
-      <button class="dev-modal-close" onclick="closeDevModalDirect()">&times;</button>
+      <button type="button" class="dev-modal-close" onclick="closeDevModalDirect()" aria-label="Close modal">&times;</button>
       <div class="dev-modal-body">
         <img id="dev-modal-img" src="" alt="Developer Portrait Preview" />
       </div>
@@ -385,5 +411,3 @@
   </div>
 </div>
 {{ end }}
-
-

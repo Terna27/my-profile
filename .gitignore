@@ -1,0 +1,25 @@
+# Environment
+.env
+*.env
+
+# Go build / development
+tmp/
+*.exe
+*.test
+bin/
+
+# OS / editor files
+.DS_Store
+.vscode/
+.idea/
+
+# Persistent application storage and runtime uploads
+portfolio-os/storage/
+portfolio-os/uploads/projects/*
+portfolio-os/uploads/photos/*
+portfolio-os/uploads/profile/*
+portfolio-os/uploads/certificates/*
+!portfolio-os/uploads/certificates/3e381fc26f004bc908a1551f435a218c.png
+!portfolio-os/uploads/certificates/ab15e093578b1ee595f47f22069a29a4.png
+portfolio-os/uploads/resume/*
+!portfolio-os/uploads/resume/resume.pdf

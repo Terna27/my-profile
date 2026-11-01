@@ -3,14 +3,16 @@
    ========================================================================== */
 
 :root {
-    --bg-dark: #060813;
-    --card-bg: #0d1127;
-    --card-border: #1a2348;
-    --primary-indigo: #5865f2;
-    --primary-purple: #8b5cf6;
-    --text-main: #f3f4f8;
-    --text-muted: #8c9bb7;
-    --accent-glow: rgba(99, 102, 241, 0.15);
+    --bg-dark: #070c18;
+    --card-bg: #111a2e;
+    --card-border: #1e2c47;
+    --primary-indigo: #5eead4;
+    --primary-purple: #7ce0c3;
+    --primary-mint: #5eead4;
+    --mint-accent: #7ce0c3;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --accent-glow: rgba(94, 234, 212, 0.15);
 }
 
 /* --------------------------------------------------------------------------
@@ -67,9 +69,9 @@ html, body {
 .pill-badge {
     display: inline-block;
     padding: 6px 14px;
-    background: rgba(99, 102, 241, 0.1);
-    color: #818cf8;
-    border: 1px solid rgba(99, 102, 241, 0.25);
+    background: rgba(94, 234, 212, 0.1);
+    color: #5eead4;
+    border: 1px solid rgba(94, 234, 212, 0.25);
     border-radius: 9999px;
     font-size: 11px;
     font-weight: 700;

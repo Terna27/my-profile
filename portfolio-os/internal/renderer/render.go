@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"io/fs"
 	"net/http"
+	"strings"
 )
 
 type Renderer struct {
@@ -17,6 +18,23 @@ func New(files fs.FS) (*Renderer, error) {
 	funcs := template.FuncMap{
 		"add": func(a, b int) int {
 			return a + b
+		},
+		"cleanEmail": func(raw string) string {
+			raw = strings.TrimSpace(raw)
+			if strings.HasPrefix(raw, "[") && strings.Contains(raw, "]") {
+				idx := strings.Index(raw, "]")
+				return strings.TrimSpace(raw[1:idx])
+			}
+			return raw
+		},
+		"isCloudinary": func(url string) bool {
+			return strings.Contains(url, "res.cloudinary.com")
+		},
+		"hasPrefix": func(s, prefix string) bool {
+			return strings.HasPrefix(s, prefix)
+		},
+		"safeURL": func(s string) template.URL {
+			return template.URL(s)
 		},
 	}
 
@@ -57,8 +75,9 @@ func New(files fs.FS) (*Renderer, error) {
 		)
 		if err != nil {
 			return nil, fmt.Errorf(
-				"failed to parse standalone template %s: %w",
+				"failed to parse standalone template %s (%s): %w",
 				name,
+				page,
 				err,
 			)
 		}

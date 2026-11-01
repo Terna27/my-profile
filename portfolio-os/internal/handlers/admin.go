@@ -1,23 +1,30 @@
 package handlers
 
 import (
-	"fmt"
-	"io"
+	"log"
 	"net/http"
 	"os"
-	"portfolio-os/internal/models"
-	"portfolio-os/internal/services"
 	"strconv"
 	"strings"
+
+	"portfolio-os/internal/middleware"
+	"portfolio-os/internal/models"
+	"portfolio-os/internal/services"
 )
 
 type AdminHandler struct {
 	Renderer interface {
 		Render(http.ResponseWriter, string, any) error
 	}
+	PortfolioService *services.PortfolioService
+	StorageService   *services.StorageService
+	AnalyticsService *services.AnalyticsService
+}
 
-	PortfolioService  *services.PortfolioService
-	CloudinaryService *services.CloudinaryService
+type AdminPageData struct {
+	Portfolio models.Portfolio
+	CSRFToken string
+	Stats     *services.AnalyticsStats
 }
 
 func NewAdminHandler(
@@ -25,49 +32,52 @@ func NewAdminHandler(
 		Render(http.ResponseWriter, string, any) error
 	},
 	portfolioService *services.PortfolioService,
-	cloudinaryService *services.CloudinaryService,
+	storageService *services.StorageService,
+	analyticsService *services.AnalyticsService,
 ) *AdminHandler {
 	return &AdminHandler{
-		Renderer:          renderer,
-		PortfolioService:  portfolioService,
-		CloudinaryService: cloudinaryService,
+		Renderer:         renderer,
+		PortfolioService: portfolioService,
+		StorageService:   storageService,
+		AnalyticsService: analyticsService,
 	}
 }
 
 func (h *AdminHandler) Login(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		if err := h.Renderer.Render(w, "admin-login", nil); err != nil {
-			http.Error(
-				w,
-				"failed to render admin login",
-				http.StatusInternalServerError,
-			)
+		cookie, err := r.Cookie("admin_session")
+		if err == nil && cookie.Value != "" && cookie.Value == middleware.AdminSessionSecret() {
+			http.Redirect(w, r, "/admin", http.StatusSeeOther)
+			return
+		}
+
+		data := map[string]any{
+			"CSRFToken": middleware.GetCSRFToken(r),
+		}
+		if err := h.Renderer.Render(w, "admin-login", data); err != nil {
+			http.Error(w, "failed to render admin login", http.StatusInternalServerError)
 		}
 		return
 	}
 
 	password := r.FormValue("password")
+	expectedPassword := middleware.AdminPasswordSecret()
 
-	if password != os.Getenv("ADMIN_PASSWORD") {
-		http.Error(
-			w,
-			"invalid password",
-			http.StatusUnauthorized,
-		)
+	if password == "" || password != expectedPassword {
+		http.Error(w, "invalid password", http.StatusUnauthorized)
 		return
 	}
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "admin_session",
-		Value:    os.Getenv("ADMIN_SESSION"),
+		Value:    middleware.AdminSessionSecret(),
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   false,
+		Secure:   r.TLS != nil,
 		SameSite: http.SameSiteStrictMode,
 	})
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
-
 }
 
 func (h *AdminHandler) Logout(w http.ResponseWriter, r *http.Request) {
@@ -77,98 +87,105 @@ func (h *AdminHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		MaxAge:   -1,
 		HttpOnly: true,
-		Secure:   false,
+		Secure:   r.TLS != nil,
 		SameSite: http.SameSiteStrictMode,
 	})
 
 	http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
-
 }
 
-func (h *AdminHandler) UploadResume(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
+func (h *AdminHandler) Dashboard(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	currentPortfolio := h.PortfolioService.GetPortfolio()
+
+	var stats *services.AnalyticsStats
+	if h.AnalyticsService != nil {
+		stats = h.AnalyticsService.GetStats()
+	}
+
+	data := AdminPageData{
+		Portfolio: currentPortfolio,
+		CSRFToken: middleware.GetCSRFToken(r),
+		Stats:     stats,
+	}
+
+	if err := h.Renderer.Render(w, "admin", data); err != nil {
+		log.Printf("admin render error: %v", err)
+		http.Error(w, "Failed to render admin page", http.StatusInternalServerError)
+	}
+}
+
+// Résumé Handlers
+
+func (h *AdminHandler) UploadResume(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(
-			w,
-			"method not allowed",
-			http.StatusMethodNotAllowed,
-		)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	if err := saveResume(r); err != nil {
-		http.Error(
-			w,
-			err.Error(),
-			http.StatusBadRequest,
-		)
+	if h.StorageService == nil {
+		http.Error(w, "storage service is not configured", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+	if _, err := h.StorageService.SaveResume(r); err != nil {
+		http.Error(w, "failed to save résumé: "+err.Error(), http.StatusBadRequest)
+		return
+	}
 
+	http.Redirect(w, r, "/admin#resume", http.StatusSeeOther)
 }
 
-func (h *AdminHandler) DownloadResume(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
-	if r.Method != http.MethodGet {
-		http.Error(
-			w,
-			"method not allowed",
-			http.StatusMethodNotAllowed,
-		)
+func (h *AdminHandler) DownloadResume(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet && r.Method != http.MethodHead {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	const resumePath = "uploads/resume/resume.pdf"
+	if h.StorageService == nil {
+		http.Error(w, "storage service is not configured", http.StatusInternalServerError)
+		return
+	}
+
+	resumePath, err := h.StorageService.GetResumePath()
+	if err != nil {
+		http.Error(w, "résumé not found", http.StatusNotFound)
+		return
+	}
 
 	if _, err := os.Stat(resumePath); err != nil {
-		if os.IsNotExist(err) {
-			http.Error(
-				w,
-				"resume not found",
-				http.StatusNotFound,
-			)
-			return
-		}
-
-		http.Error(
-			w,
-			"failed to access resume",
-			http.StatusInternalServerError,
-		)
+		http.Error(w, "résumé not found", http.StatusNotFound)
 		return
 	}
 
-	w.Header().Set(
-		"Content-Disposition",
-		`attachment; filename="resume.pdf"`,
-	)
-
-	w.Header().Set(
-		"Content-Type",
-		"application/pdf",
-	)
-
+	w.Header().Set("Content-Disposition", `attachment; filename="resume.pdf"`)
+	w.Header().Set("Content-Type", "application/pdf")
 	http.ServeFile(w, r, resumePath)
-
 }
 
-func (h *AdminHandler) UpdateProfile(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
+// Profile Handlers
+
+func (h *AdminHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(
-			w,
-			"method not allowed",
-			http.StatusMethodNotAllowed,
-		)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
+	}
+
+	currentPortfolio := h.PortfolioService.GetPortfolio()
+	oldImage := currentPortfolio.Profile.ProfileImage
+
+	profileImage := r.FormValue("profile_image")
+
+	// Check if a new file upload was provided
+	if h.StorageService != nil {
+		uploadedURL, err := h.StorageService.SaveImage(r, "profile_image_file", "profile")
+		if err != nil {
+			http.Error(w, "failed to upload profile image: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+		if uploadedURL != "" {
+			profileImage = uploadedURL
+		}
 	}
 
 	profile := models.Profile{
@@ -176,216 +193,439 @@ func (h *AdminHandler) UpdateProfile(
 		Title:        r.FormValue("title"),
 		Bio:          r.FormValue("bio"),
 		Location:     r.FormValue("location"),
-		ProfileImage: r.FormValue("profile_image"),
+		ProfileImage: profileImage,
 		Availability: r.FormValue("availability"),
 	}
 
 	if err := h.PortfolioService.UpdateProfile(profile); err != nil {
-		http.Error(
-			w,
-			"failed to update profile",
-			http.StatusInternalServerError,
-		)
+		http.Error(w, "failed to update profile", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+	// Safe replacement: if new image differs and old image was local, delete old file
+	if profileImage != oldImage && oldImage != "" && h.StorageService != nil {
+		_ = h.StorageService.SafeDeleteFile(oldImage, h.PortfolioService.IsImageReferenced)
+	}
 
+	http.Redirect(w, r, "/admin#profile", http.StatusSeeOther)
 }
 
-func (h *AdminHandler) AddCertificate(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
+// Photos (Slideshow) Handlers
+
+func (h *AdminHandler) AddPhoto(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(
-			w,
-			"method not allowed",
-			http.StatusMethodNotAllowed,
-		)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	imageURL, err := h.saveCertificateImage(r)
+	if h.StorageService == nil {
+		http.Error(w, "storage service is not configured", http.StatusInternalServerError)
+		return
+	}
+
+	imageURL, err := h.StorageService.SaveImage(r, "image", "photos")
 	if err != nil {
-		http.Error(
-			w,
-			"failed to upload certificate image: "+err.Error(),
-			http.StatusBadRequest,
-		)
-		return
-	}
-
-	certificate := models.Certificate{
-		Title:           r.FormValue("title"),
-		Issuer:          r.FormValue("issuer"),
-		IssueDate:       r.FormValue("issue_date"),
-		CredentialID:    r.FormValue("credential_id"),
-		Description:     r.FormValue("description"),
-		Image:           imageURL,
-		VerificationURL: r.FormValue("verification_url"),
-	}
-
-	if certificate.Title == "" || certificate.Issuer == "" {
-		http.Error(
-			w,
-			"title and issuer are required",
-			http.StatusBadRequest,
-		)
-		return
-	}
-
-	if err := h.PortfolioService.AddCertificate(certificate); err != nil {
-		http.Error(
-			w,
-			"failed to add certificate",
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	http.Redirect(w, r, "/admin", http.StatusSeeOther)
-
-}
-
-func (h *AdminHandler) UpdateCertificate(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
-	if r.Method != http.MethodPost {
-		http.Error(
-			w,
-			"method not allowed",
-			http.StatusMethodNotAllowed,
-		)
-		return
-	}
-
-	indexStr := r.PathValue("index")
-
-	index, err := strconv.Atoi(indexStr)
-	if err != nil {
-		http.Error(
-			w,
-			"invalid certificate index",
-			http.StatusBadRequest,
-		)
-		return
-	}
-
-	currentPortfolio := h.PortfolioService.GetPortfolio()
-
-	if index < 0 || index >= len(currentPortfolio.Certificates) {
-		http.Error(
-			w,
-			"certificate not found",
-			http.StatusNotFound,
-		)
-		return
-	}
-
-	currentCertificate := currentPortfolio.Certificates[index]
-
-	imageURL, err := h.saveCertificateImage(r)
-	if err != nil {
-		http.Error(
-			w,
-			"failed to upload certificate image: "+err.Error(),
-			http.StatusBadRequest,
-		)
+		http.Error(w, "failed to upload photo: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	if imageURL == "" {
-		imageURL = currentCertificate.Image
-	}
-
-	certificate := models.Certificate{
-		Title:           r.FormValue("title"),
-		Issuer:          r.FormValue("issuer"),
-		IssueDate:       r.FormValue("issue_date"),
-		CredentialID:    r.FormValue("credential_id"),
-		Description:     r.FormValue("description"),
-		Image:           imageURL,
-		VerificationURL: r.FormValue("verification_url"),
-	}
-
-	if certificate.Title == "" || certificate.Issuer == "" {
-		http.Error(
-			w,
-			"title and issuer are required",
-			http.StatusBadRequest,
-		)
+		http.Error(w, "photo image file is required", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.PortfolioService.UpdateCertificate(
-		index,
-		certificate,
-	); err != nil {
-		http.Error(
-			w,
-			"failed to update certificate",
-			http.StatusInternalServerError,
-		)
+	order, _ := strconv.Atoi(r.FormValue("display_order"))
+
+	photo := models.Photo{
+		URL:          imageURL,
+		Caption:      r.FormValue("caption"),
+		DisplayOrder: order,
+	}
+
+	if err := h.PortfolioService.AddPhoto(photo); err != nil {
+		_ = h.StorageService.SafeDeleteFile(imageURL, nil)
+		http.Error(w, "failed to save photo: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(
-		w,
-		r,
-		"/admin",
-		http.StatusSeeOther,
-	)
-
+	http.Redirect(w, r, "/admin#photos", http.StatusSeeOther)
 }
 
-func (h *AdminHandler) DeleteCertificate(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
+func (h *AdminHandler) UpdatePhoto(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(
-			w,
-			"method not allowed",
-			http.StatusMethodNotAllowed,
-		)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	index, err := strconv.Atoi(r.PathValue("index"))
 	if err != nil {
-		http.Error(
-			w,
-			"invalid certificate index",
-			http.StatusBadRequest,
-		)
+		http.Error(w, "invalid photo index", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.PortfolioService.DeleteCertificate(index); err != nil {
-		http.Error(
-			w,
-			"failed to delete certificate",
-			http.StatusInternalServerError,
-		)
+	currentPortfolio := h.PortfolioService.GetPortfolio()
+	if index < 0 || index >= len(currentPortfolio.Photos) {
+		http.Error(w, "photo not found", http.StatusNotFound)
 		return
 	}
 
-	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+	photoToUpdate := currentPortfolio.Photos[index]
+	if photoToUpdate.ID == 0 {
+		http.Error(w, "cannot update bundled default photo directly; upload a new photo", http.StatusBadRequest)
+		return
+	}
 
+	currentPhoto := currentPortfolio.Photos[index]
+	imageURL := currentPhoto.URL
+	var newImageURL string
+
+	if h.StorageService != nil {
+		uploaded, err := h.StorageService.SaveImage(r, "image", "photos")
+		if err != nil {
+			http.Error(w, "failed to upload replacement photo: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+		if uploaded != "" {
+			newImageURL = uploaded
+			imageURL = uploaded
+		}
+	}
+
+	order, _ := strconv.Atoi(r.FormValue("display_order"))
+
+	photo := models.Photo{
+		URL:          imageURL,
+		Caption:      r.FormValue("caption"),
+		DisplayOrder: order,
+	}
+
+	if err := h.PortfolioService.UpdatePhoto(index, photo); err != nil {
+		if newImageURL != "" && h.StorageService != nil {
+			_ = h.StorageService.SafeDeleteFile(newImageURL, nil)
+		}
+		http.Error(w, "failed to update photo", http.StatusInternalServerError)
+		return
+	}
+
+	// Safe replacement
+	if newImageURL != "" && newImageURL != currentPhoto.URL && h.StorageService != nil {
+		_ = h.StorageService.SafeDeleteFile(currentPhoto.URL, h.PortfolioService.IsImageReferenced)
+	}
+
+	http.Redirect(w, r, "/admin#photos", http.StatusSeeOther)
 }
 
-func (h *AdminHandler) AddSkill(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
+func (h *AdminHandler) DeletePhoto(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(
-			w,
-			"method not allowed",
-			http.StatusMethodNotAllowed,
-		)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	index, err := strconv.Atoi(r.PathValue("index"))
+	if err != nil {
+		http.Error(w, "invalid photo index", http.StatusBadRequest)
+		return
+	}
+
+	currentPortfolio := h.PortfolioService.GetPortfolio()
+	if index < 0 || index >= len(currentPortfolio.Photos) {
+		http.Error(w, "photo not found", http.StatusNotFound)
+		return
+	}
+
+	photoToDelete := currentPortfolio.Photos[index]
+	if photoToDelete.ID == 0 {
+		http.Error(w, "cannot delete bundled default photo", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.PortfolioService.DeletePhoto(index); err != nil {
+		http.Error(w, "failed to delete photo", http.StatusInternalServerError)
+		return
+	}
+
+	if h.StorageService != nil {
+		_ = h.StorageService.SafeDeleteFile(photoToDelete.URL, h.PortfolioService.IsImageReferenced)
+	}
+
+	http.Redirect(w, r, "/admin#photos", http.StatusSeeOther)
+}
+
+// Certificate Handlers
+
+func (h *AdminHandler) AddCertificate(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var imageURL string
+	if h.StorageService != nil {
+		uploaded, err := h.StorageService.SaveImage(r, "image", "certificates")
+		if err != nil {
+			http.Error(w, "failed to upload certificate image: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+		imageURL = uploaded
+	}
+
+	certificate := models.Certificate{
+		Title:           r.FormValue("title"),
+		Issuer:          r.FormValue("issuer"),
+		IssueDate:       r.FormValue("issue_date"),
+		CredentialID:    r.FormValue("credential_id"),
+		Description:     r.FormValue("description"),
+		Image:           imageURL,
+		VerificationURL: r.FormValue("verification_url"),
+	}
+
+	if certificate.Title == "" || certificate.Issuer == "" {
+		if imageURL != "" && h.StorageService != nil {
+			_ = h.StorageService.SafeDeleteFile(imageURL, nil)
+		}
+		http.Error(w, "title and issuer are required", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.PortfolioService.AddCertificate(certificate); err != nil {
+		if imageURL != "" && h.StorageService != nil {
+			_ = h.StorageService.SafeDeleteFile(imageURL, nil)
+		}
+		http.Error(w, "failed to add certificate", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/admin#certificates", http.StatusSeeOther)
+}
+
+func (h *AdminHandler) UpdateCertificate(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	index, err := strconv.Atoi(r.PathValue("index"))
+	if err != nil {
+		http.Error(w, "invalid certificate index", http.StatusBadRequest)
+		return
+	}
+
+	currentPortfolio := h.PortfolioService.GetPortfolio()
+	if index < 0 || index >= len(currentPortfolio.Certificates) {
+		http.Error(w, "certificate not found", http.StatusNotFound)
+		return
+	}
+
+	currentCertificate := currentPortfolio.Certificates[index]
+	imageURL := currentCertificate.Image
+	var newImageURL string
+
+	if h.StorageService != nil {
+		uploaded, err := h.StorageService.SaveImage(r, "image", "certificates")
+		if err != nil {
+			http.Error(w, "failed to upload certificate image: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+		if uploaded != "" {
+			newImageURL = uploaded
+			imageURL = uploaded
+		}
+	}
+
+	certificate := models.Certificate{
+		Title:           r.FormValue("title"),
+		Issuer:          r.FormValue("issuer"),
+		IssueDate:       r.FormValue("issue_date"),
+		CredentialID:    r.FormValue("credential_id"),
+		Description:     r.FormValue("description"),
+		Image:           imageURL,
+		VerificationURL: r.FormValue("verification_url"),
+	}
+
+	if certificate.Title == "" || certificate.Issuer == "" {
+		if newImageURL != "" && h.StorageService != nil {
+			_ = h.StorageService.SafeDeleteFile(newImageURL, nil)
+		}
+		http.Error(w, "title and issuer are required", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.PortfolioService.UpdateCertificate(index, certificate); err != nil {
+		if newImageURL != "" && h.StorageService != nil {
+			_ = h.StorageService.SafeDeleteFile(newImageURL, nil)
+		}
+		http.Error(w, "failed to update certificate", http.StatusInternalServerError)
+		return
+	}
+
+	// Safe replacement
+	if newImageURL != "" && newImageURL != currentCertificate.Image && h.StorageService != nil {
+		_ = h.StorageService.SafeDeleteFile(currentCertificate.Image, h.PortfolioService.IsImageReferenced)
+	}
+
+	http.Redirect(w, r, "/admin#certificates", http.StatusSeeOther)
+}
+
+func (h *AdminHandler) DeleteCertificate(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	index, err := strconv.Atoi(r.PathValue("index"))
+	if err != nil {
+		http.Error(w, "invalid certificate index", http.StatusBadRequest)
+		return
+	}
+
+	currentPortfolio := h.PortfolioService.GetPortfolio()
+	if index < 0 || index >= len(currentPortfolio.Certificates) {
+		http.Error(w, "certificate not found", http.StatusNotFound)
+		return
+	}
+
+	certificateToDelete := currentPortfolio.Certificates[index]
+
+	if err := h.PortfolioService.DeleteCertificate(index); err != nil {
+		http.Error(w, "failed to delete certificate", http.StatusInternalServerError)
+		return
+	}
+
+	if h.StorageService != nil {
+		_ = h.StorageService.SafeDeleteFile(certificateToDelete.Image, h.PortfolioService.IsImageReferenced)
+	}
+
+	http.Redirect(w, r, "/admin#certificates", http.StatusSeeOther)
+}
+
+// Project Handlers
+
+func (h *AdminHandler) AddProject(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	project, ok := parseProjectForm(w, r)
+	if !ok {
+		return
+	}
+
+	var imageURL string
+	if h.StorageService != nil {
+		uploaded, err := h.StorageService.SaveImage(r, "image", "projects")
+		if err != nil {
+			http.Error(w, "failed to upload project image: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+		imageURL = uploaded
+	}
+
+	project.Image = imageURL
+
+	if err := h.PortfolioService.AddProject(project); err != nil {
+		if imageURL != "" && h.StorageService != nil {
+			_ = h.StorageService.SafeDeleteFile(imageURL, nil)
+		}
+		http.Error(w, "failed to add project", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/admin#projects", http.StatusSeeOther)
+}
+
+func (h *AdminHandler) UpdateProject(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	index, err := strconv.Atoi(r.PathValue("index"))
+	if err != nil {
+		http.Error(w, "invalid project index", http.StatusBadRequest)
+		return
+	}
+
+	currentPortfolio := h.PortfolioService.GetPortfolio()
+	if index < 0 || index >= len(currentPortfolio.Projects) {
+		http.Error(w, "project not found", http.StatusNotFound)
+		return
+	}
+
+	project, ok := parseProjectForm(w, r)
+	if !ok {
+		return
+	}
+
+	currentProject := currentPortfolio.Projects[index]
+	project.Image = currentProject.Image
+	var newImageURL string
+
+	if h.StorageService != nil {
+		uploaded, err := h.StorageService.SaveImage(r, "image", "projects")
+		if err != nil {
+			http.Error(w, "failed to upload project image: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+		if uploaded != "" {
+			newImageURL = uploaded
+			project.Image = uploaded
+		}
+	}
+
+	if err := h.PortfolioService.UpdateProject(index, project); err != nil {
+		if newImageURL != "" && h.StorageService != nil {
+			_ = h.StorageService.SafeDeleteFile(newImageURL, nil)
+		}
+		http.Error(w, "failed to update project", http.StatusInternalServerError)
+		return
+	}
+
+	// Safe replacement
+	if newImageURL != "" && newImageURL != currentProject.Image && h.StorageService != nil {
+		_ = h.StorageService.SafeDeleteFile(currentProject.Image, h.PortfolioService.IsImageReferenced)
+	}
+
+	http.Redirect(w, r, "/admin#projects", http.StatusSeeOther)
+}
+
+func (h *AdminHandler) DeleteProject(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	index, err := strconv.Atoi(r.PathValue("index"))
+	if err != nil {
+		http.Error(w, "invalid project index", http.StatusBadRequest)
+		return
+	}
+
+	currentPortfolio := h.PortfolioService.GetPortfolio()
+	if index < 0 || index >= len(currentPortfolio.Projects) {
+		http.Error(w, "project not found", http.StatusNotFound)
+		return
+	}
+
+	projectToDelete := currentPortfolio.Projects[index]
+
+	if err := h.PortfolioService.DeleteProject(index); err != nil {
+		http.Error(w, "failed to delete project", http.StatusInternalServerError)
+		return
+	}
+
+	if h.StorageService != nil {
+		_ = h.StorageService.SafeDeleteFile(projectToDelete.Image, h.PortfolioService.IsImageReferenced)
+	}
+
+	http.Redirect(w, r, "/admin#projects", http.StatusSeeOther)
+}
+
+// Skills Handlers
+
+func (h *AdminHandler) AddSkill(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -395,38 +635,22 @@ func (h *AdminHandler) AddSkill(
 	}
 
 	if err := h.PortfolioService.AddSkill(skill); err != nil {
-		http.Error(
-			w,
-			"failed to add skill",
-			http.StatusInternalServerError,
-		)
+		http.Error(w, "failed to add skill", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/admin", http.StatusSeeOther)
-
+	http.Redirect(w, r, "/admin#skills", http.StatusSeeOther)
 }
 
-func (h *AdminHandler) UpdateSkill(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
+func (h *AdminHandler) UpdateSkill(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(
-			w,
-			"method not allowed",
-			http.StatusMethodNotAllowed,
-		)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	index, err := strconv.Atoi(r.PathValue("index"))
 	if err != nil {
-		http.Error(
-			w,
-			"invalid skill index",
-			http.StatusBadRequest,
-		)
+		http.Error(w, "invalid skill index", http.StatusBadRequest)
 		return
 	}
 
@@ -436,64 +660,38 @@ func (h *AdminHandler) UpdateSkill(
 	}
 
 	if err := h.PortfolioService.UpdateSkill(index, skill); err != nil {
-		http.Error(
-			w,
-			"failed to update skill",
-			http.StatusInternalServerError,
-		)
+		http.Error(w, "failed to update skill", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/admin", http.StatusSeeOther)
-
+	http.Redirect(w, r, "/admin#skills", http.StatusSeeOther)
 }
 
-func (h *AdminHandler) DeleteSkill(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
+func (h *AdminHandler) DeleteSkill(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(
-			w,
-			"method not allowed",
-			http.StatusMethodNotAllowed,
-		)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	index, err := strconv.Atoi(r.PathValue("index"))
 	if err != nil {
-		http.Error(
-			w,
-			"invalid skill index",
-			http.StatusBadRequest,
-		)
+		http.Error(w, "invalid skill index", http.StatusBadRequest)
 		return
 	}
 
 	if err := h.PortfolioService.DeleteSkill(index); err != nil {
-		http.Error(
-			w,
-			"failed to delete skill",
-			http.StatusInternalServerError,
-		)
+		http.Error(w, "failed to delete skill", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/admin", http.StatusSeeOther)
-
+	http.Redirect(w, r, "/admin#skills", http.StatusSeeOther)
 }
 
-func (h *AdminHandler) AddStatistic(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
+// Statistics Handlers
+
+func (h *AdminHandler) AddStatistic(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(
-			w,
-			"method not allowed",
-			http.StatusMethodNotAllowed,
-		)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -503,38 +701,22 @@ func (h *AdminHandler) AddStatistic(
 	}
 
 	if err := h.PortfolioService.AddStatistic(statistic); err != nil {
-		http.Error(
-			w,
-			"failed to add statistic",
-			http.StatusInternalServerError,
-		)
+		http.Error(w, "failed to add statistic", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/admin", http.StatusSeeOther)
-
+	http.Redirect(w, r, "/admin#overview", http.StatusSeeOther)
 }
 
-func (h *AdminHandler) UpdateStatistic(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
+func (h *AdminHandler) UpdateStatistic(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(
-			w,
-			"method not allowed",
-			http.StatusMethodNotAllowed,
-		)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	index, err := strconv.Atoi(r.PathValue("index"))
 	if err != nil {
-		http.Error(
-			w,
-			"invalid statistic index",
-			http.StatusBadRequest,
-		)
+		http.Error(w, "invalid statistic index", http.StatusBadRequest)
 		return
 	}
 
@@ -544,64 +726,38 @@ func (h *AdminHandler) UpdateStatistic(
 	}
 
 	if err := h.PortfolioService.UpdateStatistic(index, statistic); err != nil {
-		http.Error(
-			w,
-			"failed to update statistic",
-			http.StatusInternalServerError,
-		)
+		http.Error(w, "failed to update statistic", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/admin", http.StatusSeeOther)
-
+	http.Redirect(w, r, "/admin#overview", http.StatusSeeOther)
 }
 
-func (h *AdminHandler) DeleteStatistic(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
+func (h *AdminHandler) DeleteStatistic(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(
-			w,
-			"method not allowed",
-			http.StatusMethodNotAllowed,
-		)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	index, err := strconv.Atoi(r.PathValue("index"))
 	if err != nil {
-		http.Error(
-			w,
-			"invalid statistic index",
-			http.StatusBadRequest,
-		)
+		http.Error(w, "invalid statistic index", http.StatusBadRequest)
 		return
 	}
 
 	if err := h.PortfolioService.DeleteStatistic(index); err != nil {
-		http.Error(
-			w,
-			"failed to delete statistic",
-			http.StatusInternalServerError,
-		)
+		http.Error(w, "failed to delete statistic", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/admin", http.StatusSeeOther)
-
+	http.Redirect(w, r, "/admin#overview", http.StatusSeeOther)
 }
 
-func (h *AdminHandler) AddService(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
+// Service Handlers
+
+func (h *AdminHandler) AddService(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(
-			w,
-			"method not allowed",
-			http.StatusMethodNotAllowed,
-		)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -612,47 +768,27 @@ func (h *AdminHandler) AddService(
 	}
 
 	if service.Title == "" || service.Description == "" {
-		http.Error(
-			w,
-			"title and description are required",
-			http.StatusBadRequest,
-		)
+		http.Error(w, "title and description are required", http.StatusBadRequest)
 		return
 	}
 
 	if err := h.PortfolioService.AddService(service); err != nil {
-		http.Error(
-			w,
-			"failed to add service",
-			http.StatusInternalServerError,
-		)
+		http.Error(w, "failed to add service", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/admin", http.StatusSeeOther)
-
+	http.Redirect(w, r, "/admin#overview", http.StatusSeeOther)
 }
 
-func (h *AdminHandler) UpdateService(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
+func (h *AdminHandler) UpdateService(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(
-			w,
-			"method not allowed",
-			http.StatusMethodNotAllowed,
-		)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	index, err := strconv.Atoi(r.PathValue("index"))
 	if err != nil {
-		http.Error(
-			w,
-			"invalid service index",
-			http.StatusBadRequest,
-		)
+		http.Error(w, "invalid service index", http.StatusBadRequest)
 		return
 	}
 
@@ -663,73 +799,43 @@ func (h *AdminHandler) UpdateService(
 	}
 
 	if service.Title == "" || service.Description == "" {
-		http.Error(
-			w,
-			"title and description are required",
-			http.StatusBadRequest,
-		)
+		http.Error(w, "title and description are required", http.StatusBadRequest)
 		return
 	}
 
 	if err := h.PortfolioService.UpdateService(index, service); err != nil {
-		http.Error(
-			w,
-			"failed to update service",
-			http.StatusInternalServerError,
-		)
+		http.Error(w, "failed to update service", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/admin", http.StatusSeeOther)
-
+	http.Redirect(w, r, "/admin#overview", http.StatusSeeOther)
 }
 
-func (h *AdminHandler) DeleteService(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
+func (h *AdminHandler) DeleteService(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(
-			w,
-			"method not allowed",
-			http.StatusMethodNotAllowed,
-		)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	index, err := strconv.Atoi(r.PathValue("index"))
 	if err != nil {
-		http.Error(
-			w,
-			"invalid service index",
-			http.StatusBadRequest,
-		)
+		http.Error(w, "invalid service index", http.StatusBadRequest)
 		return
 	}
 
 	if err := h.PortfolioService.DeleteService(index); err != nil {
-		http.Error(
-			w,
-			"failed to delete service",
-			http.StatusInternalServerError,
-		)
+		http.Error(w, "failed to delete service", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/admin", http.StatusSeeOther)
-
+	http.Redirect(w, r, "/admin#overview", http.StatusSeeOther)
 }
 
-func (h *AdminHandler) AddEducation(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
+// Education Handlers
+
+func (h *AdminHandler) AddEducation(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(
-			w,
-			"method not allowed",
-			http.StatusMethodNotAllowed,
-		)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -739,38 +845,22 @@ func (h *AdminHandler) AddEducation(
 	}
 
 	if err := h.PortfolioService.AddEducation(entry); err != nil {
-		http.Error(
-			w,
-			"failed to add education entry",
-			http.StatusInternalServerError,
-		)
+		http.Error(w, "failed to add education entry", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/admin", http.StatusSeeOther)
-
+	http.Redirect(w, r, "/admin#overview", http.StatusSeeOther)
 }
 
-func (h *AdminHandler) UpdateEducation(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
+func (h *AdminHandler) UpdateEducation(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(
-			w,
-			"method not allowed",
-			http.StatusMethodNotAllowed,
-		)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	index, err := strconv.Atoi(r.PathValue("index"))
 	if err != nil {
-		http.Error(
-			w,
-			"invalid education index",
-			http.StatusBadRequest,
-		)
+		http.Error(w, "invalid education index", http.StatusBadRequest)
 		return
 	}
 
@@ -780,211 +870,38 @@ func (h *AdminHandler) UpdateEducation(
 	}
 
 	if err := h.PortfolioService.UpdateEducation(index, entry); err != nil {
-		http.Error(
-			w,
-			"failed to update education entry",
-			http.StatusInternalServerError,
-		)
+		http.Error(w, "failed to update education entry", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/admin", http.StatusSeeOther)
-
+	http.Redirect(w, r, "/admin#overview", http.StatusSeeOther)
 }
 
-func (h *AdminHandler) DeleteEducation(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
+func (h *AdminHandler) DeleteEducation(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(
-			w,
-			"method not allowed",
-			http.StatusMethodNotAllowed,
-		)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	index, err := strconv.Atoi(r.PathValue("index"))
 	if err != nil {
-		http.Error(
-			w,
-			"invalid education index",
-			http.StatusBadRequest,
-		)
+		http.Error(w, "invalid education index", http.StatusBadRequest)
 		return
 	}
 
 	if err := h.PortfolioService.DeleteEducation(index); err != nil {
-		http.Error(
-			w,
-			"failed to delete education entry",
-			http.StatusInternalServerError,
-		)
+		http.Error(w, "failed to delete education entry", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/admin", http.StatusSeeOther)
-
+	http.Redirect(w, r, "/admin#overview", http.StatusSeeOther)
 }
 
-func (h *AdminHandler) AddProject(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
+// Contact Handlers
+
+func (h *AdminHandler) UpdateContact(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(
-			w,
-			"method not allowed",
-			http.StatusMethodNotAllowed,
-		)
-		return
-	}
-
-	project, ok := parseProjectForm(w, r)
-	if !ok {
-		return
-	}
-
-	imageURL, err := h.saveProjectImage(r)
-	if err != nil {
-		http.Error(
-			w,
-			"failed to upload project image: "+err.Error(),
-			http.StatusBadRequest,
-		)
-		return
-	}
-
-	project.Image = imageURL
-
-	if err := h.PortfolioService.AddProject(project); err != nil {
-		http.Error(
-			w,
-			"failed to add project",
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	http.Redirect(w, r, "/admin", http.StatusSeeOther)
-
-}
-
-func (h *AdminHandler) UpdateProject(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
-	if r.Method != http.MethodPost {
-		http.Error(
-			w,
-			"method not allowed",
-			http.StatusMethodNotAllowed,
-		)
-		return
-	}
-
-	index, err := strconv.Atoi(r.PathValue("index"))
-	if err != nil {
-		http.Error(
-			w,
-			"invalid project index",
-			http.StatusBadRequest,
-		)
-		return
-	}
-
-	currentPortfolio := h.PortfolioService.GetPortfolio()
-
-	if index < 0 || index >= len(currentPortfolio.Projects) {
-		http.Error(
-			w,
-			"project not found",
-			http.StatusNotFound,
-		)
-		return
-	}
-
-	project, ok := parseProjectForm(w, r)
-	if !ok {
-		return
-	}
-
-	project.Image = currentPortfolio.Projects[index].Image
-
-	imageURL, err := h.saveProjectImage(r)
-	if err != nil {
-		http.Error(
-			w,
-			"failed to upload project image: "+err.Error(),
-			http.StatusBadRequest,
-		)
-		return
-	}
-
-	if imageURL != "" {
-		project.Image = imageURL
-	}
-
-	if err := h.PortfolioService.UpdateProject(index, project); err != nil {
-		http.Error(
-			w,
-			"failed to update project",
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	http.Redirect(w, r, "/admin", http.StatusSeeOther)
-
-}
-
-func (h *AdminHandler) DeleteProject(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
-	if r.Method != http.MethodPost {
-		http.Error(
-			w,
-			"method not allowed",
-			http.StatusMethodNotAllowed,
-		)
-		return
-	}
-
-	index, err := strconv.Atoi(r.PathValue("index"))
-	if err != nil {
-		http.Error(
-			w,
-			"invalid project index",
-			http.StatusBadRequest,
-		)
-		return
-	}
-
-	if err := h.PortfolioService.DeleteProject(index); err != nil {
-		http.Error(
-			w,
-			"failed to delete project",
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	http.Redirect(w, r, "/admin", http.StatusSeeOther)
-
-}
-
-func (h *AdminHandler) UpdateContact(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
-	if r.Method != http.MethodPost {
-		http.Error(
-			w,
-			"method not allowed",
-			http.StatusMethodNotAllowed,
-		)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -995,28 +912,18 @@ func (h *AdminHandler) UpdateContact(
 	}
 
 	if err := h.PortfolioService.UpdateContact(contact); err != nil {
-		http.Error(
-			w,
-			"failed to update contact",
-			http.StatusInternalServerError,
-		)
+		http.Error(w, "failed to update contact", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/admin", http.StatusSeeOther)
-
+	http.Redirect(w, r, "/admin#profile", http.StatusSeeOther)
 }
 
-func (h *AdminHandler) AddSocialLink(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
+// Social Links Handlers
+
+func (h *AdminHandler) AddSocialLink(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(
-			w,
-			"method not allowed",
-			http.StatusMethodNotAllowed,
-		)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -1026,38 +933,22 @@ func (h *AdminHandler) AddSocialLink(
 	}
 
 	if err := h.PortfolioService.AddSocialLink(link); err != nil {
-		http.Error(
-			w,
-			"failed to add social link",
-			http.StatusInternalServerError,
-		)
+		http.Error(w, "failed to add social link", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/admin", http.StatusSeeOther)
-
+	http.Redirect(w, r, "/admin#profile", http.StatusSeeOther)
 }
 
-func (h *AdminHandler) UpdateSocialLink(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
+func (h *AdminHandler) UpdateSocialLink(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(
-			w,
-			"method not allowed",
-			http.StatusMethodNotAllowed,
-		)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	index, err := strconv.Atoi(r.PathValue("index"))
 	if err != nil {
-		http.Error(
-			w,
-			"invalid social link index",
-			http.StatusBadRequest,
-		)
+		http.Error(w, "invalid social link index", http.StatusBadRequest)
 		return
 	}
 
@@ -1067,119 +958,69 @@ func (h *AdminHandler) UpdateSocialLink(
 	}
 
 	if err := h.PortfolioService.UpdateSocialLink(index, link); err != nil {
-		http.Error(
-			w,
-			"failed to update social link",
-			http.StatusInternalServerError,
-		)
+		http.Error(w, "failed to update social link", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/admin", http.StatusSeeOther)
-
+	http.Redirect(w, r, "/admin#profile", http.StatusSeeOther)
 }
 
-func (h *AdminHandler) DeleteSocialLink(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
+func (h *AdminHandler) DeleteSocialLink(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(
-			w,
-			"method not allowed",
-			http.StatusMethodNotAllowed,
-		)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	index, err := strconv.Atoi(r.PathValue("index"))
 	if err != nil {
-		http.Error(
-			w,
-			"invalid social link index",
-			http.StatusBadRequest,
-		)
+		http.Error(w, "invalid social link index", http.StatusBadRequest)
 		return
 	}
 
 	if err := h.PortfolioService.DeleteSocialLink(index); err != nil {
-		http.Error(
-			w,
-			"failed to delete social link",
-			http.StatusInternalServerError,
-		)
+		http.Error(w, "failed to delete social link", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/admin", http.StatusSeeOther)
-
+	http.Redirect(w, r, "/admin#profile", http.StatusSeeOther)
 }
-func parseSkillForm(
-	w http.ResponseWriter,
-	r *http.Request,
-) (models.Skill, bool) {
-	name := r.FormValue("name")
 
+// Helpers
+
+func parseSkillForm(w http.ResponseWriter, r *http.Request) (models.Skill, bool) {
+	name := strings.TrimSpace(r.FormValue("name"))
 	if name == "" {
-		http.Error(
-			w,
-			"skill name is required",
-			http.StatusBadRequest,
-		)
+		http.Error(w, "skill name is required", http.StatusBadRequest)
 		return models.Skill{}, false
 	}
 
 	return models.Skill{
 		Name:     name,
-		Category: r.FormValue("category"),
+		Category: strings.TrimSpace(r.FormValue("category")),
 	}, true
-
 }
 
-func parseEducationForm(
-	w http.ResponseWriter,
-	r *http.Request,
-) (models.EducationEntry, bool) {
-	institution := r.FormValue("institution")
-	degree := r.FormValue("degree")
+func parseEducationForm(w http.ResponseWriter, r *http.Request) (models.EducationEntry, bool) {
+	institution := strings.TrimSpace(r.FormValue("institution"))
+	degree := strings.TrimSpace(r.FormValue("degree"))
 
 	if institution == "" || degree == "" {
-		http.Error(
-			w,
-			"institution and degree are required",
-			http.StatusBadRequest,
-		)
+		http.Error(w, "institution and degree are required", http.StatusBadRequest)
 		return models.EducationEntry{}, false
 	}
 
-	startYear, ok := parseOptionalYear(
-		w,
-		r.FormValue("start_year"),
-		"start year",
-	)
-
+	startYear, ok := parseOptionalYear(w, r.FormValue("start_year"), "start year")
 	if !ok {
 		return models.EducationEntry{}, false
 	}
 
-	endYear, ok := parseOptionalYear(
-		w,
-		r.FormValue("end_year"),
-		"end year",
-	)
-
+	endYear, ok := parseOptionalYear(w, r.FormValue("end_year"), "end year")
 	if !ok {
 		return models.EducationEntry{}, false
 	}
 
-	if startYear != 0 &&
-		endYear != 0 &&
-		endYear < startYear {
-		http.Error(
-			w,
-			"end year must not be before start year",
-			http.StatusBadRequest,
-		)
+	if startYear != 0 && endYear != 0 && endYear < startYear {
+		http.Error(w, "end year must not be before start year", http.StatusBadRequest)
 		return models.EducationEntry{}, false
 	}
 
@@ -1191,112 +1032,71 @@ func parseEducationForm(
 		EndYear:     endYear,
 		Description: r.FormValue("description"),
 	}, true
-
 }
 
-func parseOptionalYear(
-	w http.ResponseWriter,
-	value string,
-	label string,
-) (int, bool) {
+func parseOptionalYear(w http.ResponseWriter, value string, label string) (int, bool) {
+	value = strings.TrimSpace(value)
 	if value == "" {
 		return 0, true
 	}
 
 	year, err := strconv.Atoi(value)
-
 	if err != nil || year < 1950 || year > 2100 {
-		http.Error(
-			w,
-			label+" must be a year between 1950 and 2100",
-			http.StatusBadRequest,
-		)
+		http.Error(w, label+" must be a year between 1950 and 2100", http.StatusBadRequest)
 		return 0, false
 	}
 
 	return year, true
-
 }
 
-func parseProjectForm(
-	w http.ResponseWriter,
-	r *http.Request,
-) (models.Project, bool) {
-	name := r.FormValue("name")
-	description := r.FormValue("description")
+func parseProjectForm(w http.ResponseWriter, r *http.Request) (models.Project, bool) {
+	name := strings.TrimSpace(r.FormValue("name"))
+	description := strings.TrimSpace(r.FormValue("description"))
 
 	if name == "" || description == "" {
-		http.Error(
-			w,
-			"name and description are required",
-			http.StatusBadRequest,
-		)
+		http.Error(w, "name and description are required", http.StatusBadRequest)
 		return models.Project{}, false
 	}
 
 	var technologies []string
-
-	for _, technology := range strings.Split(
-		r.FormValue("technologies"),
-		",",
-	) {
-		technology = strings.TrimSpace(technology)
-
-		if technology != "" {
-			technologies = append(
-				technologies,
-				technology,
-			)
+	for _, tech := range strings.Split(r.FormValue("technologies"), ",") {
+		tech = strings.TrimSpace(tech)
+		if tech != "" {
+			technologies = append(technologies, tech)
 		}
 	}
 
 	return models.Project{
 		Name:         name,
 		Description:  description,
-		URL:          r.FormValue("url"),
-		GitHub:       r.FormValue("github"),
+		URL:          strings.TrimSpace(r.FormValue("url")),
+		GitHub:       strings.TrimSpace(r.FormValue("github")),
 		Technologies: technologies,
 	}, true
-
 }
 
-func parseSocialLinkForm(
-	w http.ResponseWriter,
-	r *http.Request,
-) (models.SocialLink, bool) {
-	platform := r.FormValue("platform")
-	url := r.FormValue("url")
+func parseSocialLinkForm(w http.ResponseWriter, r *http.Request) (models.SocialLink, bool) {
+	platform := strings.TrimSpace(r.FormValue("platform"))
+	url := strings.TrimSpace(r.FormValue("url"))
 
 	if platform == "" || url == "" {
-		http.Error(
-			w,
-			"platform and URL are required",
-			http.StatusBadRequest,
-		)
+		http.Error(w, "platform and URL are required", http.StatusBadRequest)
 		return models.SocialLink{}, false
 	}
 
 	return models.SocialLink{
 		Platform: platform,
 		URL:      url,
-		Username: r.FormValue("username"),
+		Username: strings.TrimSpace(r.FormValue("username")),
 	}, true
-
 }
 
-func parseStatisticForm(
-	w http.ResponseWriter,
-	r *http.Request,
-) (models.Statistic, bool) {
-	label := r.FormValue("label")
-	value := r.FormValue("value")
+func parseStatisticForm(w http.ResponseWriter, r *http.Request) (models.Statistic, bool) {
+	label := strings.TrimSpace(r.FormValue("label"))
+	value := strings.TrimSpace(r.FormValue("value"))
 
 	if label == "" || value == "" {
-		http.Error(
-			w,
-			"statistic label and value are required",
-			http.StatusBadRequest,
-		)
+		http.Error(w, "statistic label and value are required", http.StatusBadRequest)
 		return models.Statistic{}, false
 	}
 
@@ -1304,315 +1104,4 @@ func parseStatisticForm(
 		Label: label,
 		Value: value,
 	}, true
-
-}
-
-func (h *AdminHandler) saveCertificateImage(
-	r *http.Request,
-) (string, error) {
-	if err := r.ParseMultipartForm(10 << 20); err != nil {
-		return "", fmt.Errorf(
-			"failed to parse upload: %w",
-			err,
-		)
-	}
-
-	file, header, err := r.FormFile("image")
-
-	if err != nil {
-		if err == http.ErrMissingFile {
-			return "", nil
-		}
-
-		return "", fmt.Errorf(
-			"failed to read image: %w",
-			err,
-		)
-	}
-
-	defer file.Close()
-
-	if header.Size > 10<<20 {
-		return "", fmt.Errorf(
-			"image is too large; maximum size is 10MB",
-		)
-	}
-
-	buffer := make([]byte, 512)
-
-	n, err := file.Read(buffer)
-
-	if err != nil && err != io.EOF {
-		return "", fmt.Errorf(
-			"failed to inspect image: %w",
-			err,
-		)
-	}
-
-	contentType := http.DetectContentType(
-		buffer[:n],
-	)
-
-	allowedTypes := map[string]bool{
-		"image/jpeg": true,
-		"image/png":  true,
-		"image/webp": true,
-	}
-
-	if !allowedTypes[contentType] {
-		return "", fmt.Errorf(
-			"unsupported image type: %s",
-			contentType,
-		)
-	}
-
-	if _, err := file.Seek(
-		0,
-		io.SeekStart,
-	); err != nil {
-		return "", fmt.Errorf(
-			"failed to reset image: %w",
-			err,
-		)
-	}
-
-	if h.CloudinaryService == nil {
-		return "", fmt.Errorf(
-			"Cloudinary service is not configured",
-		)
-	}
-
-	imageID, err := services.GenerateVisitID()
-
-	if err != nil {
-		return "", fmt.Errorf(
-			"failed to generate image ID: %w",
-			err,
-		)
-	}
-
-	filename := imageID
-
-	imageURL, err := h.CloudinaryService.UploadImage(
-		r.Context(),
-		file,
-		filename,
-		"portfolio/certificates",
-	)
-
-	if err != nil {
-		return "", fmt.Errorf(
-			"failed to upload certificate to Cloudinary: %w",
-			err,
-		)
-	}
-
-	return imageURL, nil
-
-}
-
-func (h *AdminHandler) saveProjectImage(
-	r *http.Request,
-) (string, error) {
-	if err := r.ParseMultipartForm(10 << 20); err != nil {
-		return "", fmt.Errorf(
-			"failed to parse upload: %w",
-			err,
-		)
-	}
-
-	file, header, err := r.FormFile("image")
-
-	if err != nil {
-		if err == http.ErrMissingFile {
-			return "", nil
-		}
-
-		return "", fmt.Errorf(
-			"failed to read image: %w",
-			err,
-		)
-	}
-
-	defer file.Close()
-
-	if header.Size > 10<<20 {
-		return "", fmt.Errorf(
-			"image is too large; maximum size is 10MB",
-		)
-	}
-
-	buffer := make([]byte, 512)
-
-	n, err := file.Read(buffer)
-
-	if err != nil && err != io.EOF {
-		return "", fmt.Errorf(
-			"failed to inspect image: %w",
-			err,
-		)
-	}
-
-	contentType := http.DetectContentType(
-		buffer[:n],
-	)
-
-	allowedTypes := map[string]bool{
-		"image/jpeg": true,
-		"image/png":  true,
-		"image/webp": true,
-	}
-
-	if !allowedTypes[contentType] {
-		return "", fmt.Errorf(
-			"unsupported image type: %s",
-			contentType,
-		)
-	}
-
-	if _, err := file.Seek(
-		0,
-		io.SeekStart,
-	); err != nil {
-		return "", fmt.Errorf(
-			"failed to reset image: %w",
-			err,
-		)
-	}
-
-	if h.CloudinaryService == nil {
-		return "", fmt.Errorf(
-			"Cloudinary service is not configured",
-		)
-	}
-
-	imageID, err := services.GenerateVisitID()
-
-	if err != nil {
-		return "", fmt.Errorf(
-			"failed to generate image ID: %w",
-			err,
-		)
-	}
-
-	filename := imageID
-
-	imageURL, err := h.CloudinaryService.UploadImage(
-		r.Context(),
-		file,
-		filename,
-		"portfolio/projects",
-	)
-
-	if err != nil {
-		return "", fmt.Errorf(
-			"failed to upload project to Cloudinary: %w",
-			err,
-		)
-	}
-
-	return imageURL, nil
-
-}
-
-func saveResume(
-	r *http.Request,
-) error {
-	if err := r.ParseMultipartForm(10 << 20); err != nil {
-		return fmt.Errorf(
-			"failed to parse upload: %w",
-			err,
-		)
-	}
-
-	file, header, err := r.FormFile("resume")
-
-	if err != nil {
-		if err == http.ErrMissingFile {
-			return fmt.Errorf(
-				"resume file is required",
-			)
-		}
-
-		return fmt.Errorf(
-			"failed to read resume: %w",
-			err,
-		)
-	}
-
-	defer file.Close()
-
-	if header.Size > 10<<20 {
-		return fmt.Errorf(
-			"resume is too large; maximum size is 10MB",
-		)
-	}
-
-	buffer := make([]byte, 512)
-
-	n, err := file.Read(buffer)
-
-	if err != nil && err != io.EOF {
-		return fmt.Errorf(
-			"failed to inspect resume: %w",
-			err,
-		)
-	}
-
-	contentType := http.DetectContentType(
-		buffer[:n],
-	)
-
-	if contentType != "application/pdf" {
-		return fmt.Errorf(
-			"unsupported resume type: %s; PDF is required",
-			contentType,
-		)
-	}
-
-	if _, err := file.Seek(
-		0,
-		io.SeekStart,
-	); err != nil {
-		return fmt.Errorf(
-			"failed to reset resume: %w",
-			err,
-		)
-	}
-
-	if err := os.MkdirAll(
-		"uploads/resume",
-		0755,
-	); err != nil {
-		return fmt.Errorf(
-			"failed to create resume directory: %w",
-			err,
-		)
-	}
-
-	const resumePath = "uploads/resume/resume.pdf"
-
-	output, err := os.Create(resumePath)
-
-	if err != nil {
-		return fmt.Errorf(
-			"failed to create resume: %w",
-			err,
-		)
-	}
-
-	defer output.Close()
-
-	if _, err := io.Copy(
-		output,
-		file,
-	); err != nil {
-		return fmt.Errorf(
-			"failed to save resume: %w",
-			err,
-		)
-	}
-
-	return nil
-
 }

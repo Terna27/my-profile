@@ -1,43 +1,45 @@
 {{ define "admin-login" }}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Admin Login</title>
-
+    <title>Admin Login — Portfolio OS</title>
     <link rel="stylesheet" href="/static/css/admin.css">
 </head>
+<body class="login-body">
+    <main class="login-wrapper">
+        <div class="login-card">
+            <div class="login-header">
+                <span class="login-brand-glyph" aria-hidden="true">&lt;/&gt;</span>
+                <h1>Portfolio OS</h1>
+                <p>Sign in to access system administration and dashboard.</p>
+            </div>
 
-<body>
+            <form method="POST" action="/admin/login" class="login-form">
+                <div class="form-group">
+                    <label for="password">Administrator Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        required
+                        autocomplete="current-password"
+                        placeholder="Enter password"
+                        autofocus
+                    >
+                </div>
 
-    <main class="admin-login">
-        <form method="POST" action="/admin/login">
+                <button type="submit" class="btn btn-primary btn-block">
+                    Authenticate &amp; Enter Dashboard →
+                </button>
+            </form>
 
-            <h1>Admin Login</h1>
-
-            <label for="password">
-                Password
-            </label>
-
-            <input
-                type="password"
-                id="password"
-                name="password"
-                required
-                autocomplete="current-password"
-            >
-
-            <button type="submit">
-                Login
-            </button>
-
-        </form>
+            <div class="login-footer">
+                <a href="/" class="login-back-link">← Return to Public Portfolio</a>
+            </div>
+        </div>
     </main>
-
 </body>
 </html>
-
 {{ end }}

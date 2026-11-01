@@ -1,66 +1,59 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const nav = document.querySelector(".client-nav");
-    const toggle = document.querySelector(".client-menu-toggle");
-    const mobileMenu = document.querySelector(".client-mobile-menu");
+    // Mobile navigation handler for site header
+    const toggle = document.querySelector(".mobile-nav-toggle") || document.querySelector(".client-menu-toggle");
+    const mobileMenu = document.getElementById("mobile-nav-menu") || document.querySelector(".client-mobile-menu");
+    const header = document.querySelector(".site-header") || document.querySelector(".client-nav");
 
-    if (!nav || !toggle || !mobileMenu) {
-        return;
-    }
+    if (toggle && mobileMenu) {
+        const setMenuState = (open) => {
+            toggle.setAttribute("aria-expanded", String(open));
+            toggle.setAttribute("aria-label", open ? "Close navigation menu" : "Open navigation menu");
 
-    const mobileLinks = mobileMenu.querySelectorAll("a");
+            if (open) {
+                mobileMenu.removeAttribute("hidden");
+                mobileMenu.classList.add("is-open");
+                if (header) header.classList.add("menu-open");
+            } else {
+                mobileMenu.setAttribute("hidden", "");
+                mobileMenu.classList.remove("is-open");
+                if (header) header.classList.remove("menu-open");
+            }
+        };
 
-    const setMenuState = (open) => {
-        nav.classList.toggle("menu-open", open);
-
-        toggle.setAttribute(
-            "aria-expanded",
-            String(open)
-        );
-
-        toggle.setAttribute(
-            "aria-label",
-            open
-                ? "Close navigation menu"
-                : "Open navigation menu"
-        );
-
-        mobileMenu.setAttribute(
-            "aria-hidden",
-            String(!open)
-        );
-    };
-
-    toggle.addEventListener("click", () => {
-        const isOpen = nav.classList.contains("menu-open");
-
-        setMenuState(!isOpen);
-    });
-
-    mobileLinks.forEach((link) => {
-        link.addEventListener("click", () => {
-            setMenuState(false);
+        toggle.addEventListener("click", () => {
+            const isOpen = toggle.getAttribute("aria-expanded") === "true";
+            setMenuState(!isOpen);
         });
-    });
 
-    document.addEventListener("click", (event) => {
-        if (!nav.contains(event.target)) {
-            setMenuState(false);
-        }
-    });
+        // Close on link click
+        mobileMenu.querySelectorAll("a").forEach((link) => {
+            link.addEventListener("click", () => {
+                setMenuState(false);
+            });
+        });
 
-    document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape") {
-            setMenuState(false);
-        }
-    });
+        // Close on outside click
+        document.addEventListener("click", (event) => {
+            if (header && !header.contains(event.target) && !mobileMenu.contains(event.target)) {
+                setMenuState(false);
+            }
+        });
 
-    window.addEventListener("resize", () => {
-        if (window.innerWidth > 760) {
-            setMenuState(false);
-        }
-    });
+        // Close on ESC
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+                setMenuState(false);
+            }
+        });
+
+        // Reset on desktop resize
+        window.addEventListener("resize", () => {
+            if (window.innerWidth > 820) {
+                setMenuState(false);
+            }
+        });
+    }
 });
-
 
 // Certificate Lightbox Handler
 function openCertModal(imageSrc, title, issuer) {
@@ -72,8 +65,8 @@ function openCertModal(imageSrc, title, issuer) {
   if (!modal || !modalImg) return;
 
   modalImg.src = imageSrc;
-  modalTitle.textContent = title || '';
-  modalIssuer.textContent = issuer || '';
+  if (modalTitle) modalTitle.textContent = title || '';
+  if (modalIssuer) modalIssuer.textContent = issuer || '';
 
   modal.classList.add('active');
   document.body.style.overflow = 'hidden';
@@ -93,7 +86,7 @@ function closeCertModal(e) {
   }
 }
 
-// ESC Key listener to close modal
+// ESC Key listener to close modals
 document.addEventListener('keydown', function (e) {
   if (e.key === 'Escape') {
     closeCertModalDirect();
