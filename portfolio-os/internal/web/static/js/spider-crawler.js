@@ -82,7 +82,7 @@
         'strong', '.card', '.skill-card', '.portrait-frame', '.portrait-card',
         '.project-card', '.badge-card', '.credential-card', '.nav-action-pill',
         '.home-button', '.social-icon', 'code', '.brand-glyph', '.action-pill',
-        '.home-intro', '.home-divider', '.workspace-object', 'img'
+        '.home-intro', '.home-divider', 'img'
       ].join(', ');
     }
 

@@ -9,22 +9,7 @@
   --text-muted: #94a3b8;
   --text-subtle: #64748b;
 
-  /* Ice-White & Ash Shades */
-  --ice-white: #F4F8FA;
-  --ice-white-ash-1: #EFF4F7;
-  --ice-white-ash-2: #E3EBF0;
-  --ice-white-ash-3: #CBD5E1;
-
-  /* Deep-Teal #0F3D47 Palette & Shadows */
-  --deep-teal: #0F3D47;
-  --deep-teal-light: #165664;
-  --deep-teal-dark: #072025;
-  --shadow-deep-teal-sm: 0 4px 14px rgba(15, 61, 71, 0.16);
-  --shadow-deep-teal-md: 0 10px 28px rgba(15, 61, 71, 0.28);
-  --shadow-deep-teal-lg: 0 20px 48px rgba(15, 61, 71, 0.38);
-  --shadow-deep-teal-card: 0 12px 32px rgba(15, 61, 71, 0.32);
-
-  /* Soft-Peach #F59E7B Buttons */
+  /* Soft-Peach Accent Palette */
   --soft-peach: #F59E7B;
   --soft-peach-hover: #ea8a64;
   --soft-peach-text: #07191e;
@@ -96,14 +81,6 @@ button:focus-visible,
   padding-inline: 32px;
 }
 
-/* Background Particle Canvas */
-#hero-particles-canvas {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-}
-
 main, .site-header {
   position: relative;
   z-index: 1;
@@ -134,11 +111,10 @@ main, .site-header {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(244, 248, 250, 0.94);
+  background: rgba(7, 12, 24, 0.88);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(15, 61, 71, 0.14);
-  box-shadow: 0 4px 20px rgba(15, 61, 71, 0.10);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .home-nav {
@@ -156,18 +132,17 @@ main, .site-header {
   font-size: 15px;
   font-weight: 700;
   letter-spacing: -0.3px;
-  color: var(--deep-teal);
+  color: #ffffff;
 }
 
 .brand-glyph {
-  color: var(--deep-teal);
+  color: var(--primary-mint);
   font-size: 18px;
   font-weight: 800;
-  background: rgba(15, 61, 71, 0.08);
-  border: 1px solid rgba(15, 61, 71, 0.22);
+  background: var(--mint-tint);
+  border: 1px solid rgba(94, 234, 212, 0.25);
   padding: 4px 8px;
   border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(15, 61, 71, 0.08);
 }
 
 .desktop-nav {
@@ -177,34 +152,32 @@ main, .site-header {
 }
 
 .nav-anchor {
-  color: #334155;
+  color: var(--text-muted);
   font-size: 14px;
   font-weight: 500;
   transition: color 0.15s ease;
 }
 
 .nav-anchor:hover {
-  color: var(--deep-teal);
+  color: var(--primary-mint);
 }
 
 .nav-action-pill {
   font-size: 13px;
-  font-weight: 700;
-  color: var(--soft-peach-text);
-  background: var(--soft-peach);
-  border: 1px solid var(--soft-peach);
-  padding: 8px 18px;
+  font-weight: 600;
+  color: var(--primary-mint);
+  background: var(--mint-tint);
+  border: 1px solid rgba(94, 234, 212, 0.3);
+  padding: 7px 14px;
   border-radius: 9999px;
-  box-shadow: 0 4px 14px rgba(15, 61, 71, 0.22);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s ease;
   text-decoration: none;
 }
 
 .nav-action-pill:hover {
-  background: var(--soft-peach-hover);
-  color: #041115;
+  background: var(--primary-mint);
+  color: #041210;
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(15, 61, 71, 0.32);
 }
 
 /* Mobile Toggle Button */
@@ -215,8 +188,8 @@ main, .site-header {
   gap: 5px;
   width: 40px;
   height: 40px;
-  background: rgba(15, 61, 71, 0.06);
-  border: 1px solid rgba(15, 61, 71, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   cursor: pointer;
   padding: 8px;
@@ -226,7 +199,7 @@ main, .site-header {
   display: block;
   width: 100%;
   height: 2px;
-  background: var(--deep-teal);
+  background: var(--text-main);
   border-radius: 2px;
   transition: transform 0.25s ease, opacity 0.25s ease;
 }
@@ -276,63 +249,23 @@ main, .site-header {
 .mobile-action-btn {
   text-align: center;
   padding: 12px;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 14px;
-  background: var(--soft-peach);
-  color: var(--soft-peach-text);
+  background: var(--primary-mint);
+  color: #041210;
   border-radius: 8px;
-  box-shadow: 0 4px 14px rgba(15, 61, 71, 0.22);
 }
 
 .mobile-action-btn.outline {
   background: transparent;
-  border: 1px solid rgba(15, 61, 71, 0.3);
-  color: var(--deep-teal);
+  border: 1px solid var(--card-border);
+  color: var(--text-main);
 }
 
 /* ==========================================================================
-   Hero Section (First Section)
-   Background: Ice-White #F4F8FA with Little Ash Shades
-   Deep-Teal #0F3D47 Box Shadows & Workspace Background, Soft-Peach #F59E7B Buttons
+   Hero Section
    ========================================================================== */
-.home-hero-section {
-  position: relative;
-  background-color: var(--ice-white);
-  background-image: 
-    radial-gradient(ellipse at 85% 15%, rgba(203, 213, 225, 0.6) 0%, transparent 60%),
-    radial-gradient(ellipse at 15% 85%, rgba(203, 213, 225, 0.5) 0%, transparent 55%),
-    linear-gradient(180deg, var(--ice-white) 0%, var(--ice-white-ash-1) 50%, var(--ice-white-ash-2) 100%);
-  border-bottom: 2px solid rgba(15, 61, 71, 0.16);
-  box-shadow: 0 10px 30px rgba(15, 61, 71, 0.14);
-  overflow: hidden;
-}
-
-/* Abstract Deep-Teal Table & Chair Workspace Background Illustration */
-.hero-workspace-bg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 1;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.workspace-svg {
-  width: 100%;
-  height: 100%;
-  max-height: 720px;
-  object-fit: cover;
-  opacity: 0.95;
-  transition: opacity 0.3s ease;
-}
-
 .home-hero {
-  position: relative;
-  z-index: 2;
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
   gap: 60px;
@@ -346,49 +279,45 @@ main, .site-header {
   display: inline-block;
   font-size: 11px;
   letter-spacing: 2.2px;
-  color: var(--deep-teal);
+  color: var(--primary-mint);
   font-weight: 700;
   text-transform: uppercase;
   margin: 0 0 18px;
-  background: rgba(15, 61, 71, 0.08);
-  border: 1px solid rgba(15, 61, 71, 0.22);
-  padding: 6px 14px;
+  background: var(--mint-tint);
+  border: 1px solid rgba(94, 234, 212, 0.25);
+  padding: 6px 12px;
   border-radius: 9999px;
-  box-shadow: 0 2px 10px rgba(15, 61, 71, 0.08);
 }
 
 .home-intro h1 {
   font-size: clamp(36px, 4.4vw, 58px);
   line-height: 1.12;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -1.8px;
   margin: 0 0 20px;
-  color: #081a20;
+  color: #ffffff;
 }
 
 .home-intro h1 span {
-  color: var(--deep-teal);
-  background: linear-gradient(135deg, #0F3D47 0%, #175764 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--primary-mint);
 }
 
 .home-name {
   font-size: 18px;
   font-weight: 600;
-  color: #1e293b;
+  color: #e2e8f0;
   margin: 0 0 14px;
 }
 
 .home-summary {
   font-size: 15px;
   line-height: 1.8;
-  color: #475569;
+  color: var(--text-muted);
   max-width: 530px;
   margin: 0 0 28px;
 }
 
-/* Primary Action Buttons - Soft-Peach #F59E7B with Deep-Teal #0F3D47 Box Shadow */
+/* Primary Action Buttons */
 .home-actions {
   display: flex;
   gap: 14px;
@@ -403,94 +332,87 @@ main, .site-header {
   padding: 13px 24px;
   border-radius: 8px;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s ease;
   border: 1px solid transparent;
 }
 
 .home-button.primary {
-  background: var(--soft-peach);
-  color: var(--soft-peach-text);
-  border-color: var(--soft-peach);
-  box-shadow: 0 6px 20px rgba(15, 61, 71, 0.32);
+  background: var(--primary-mint);
+  color: #041210;
+  border-color: var(--primary-mint);
+  box-shadow: 0 4px 18px var(--mint-glow);
 }
 
 .home-button.primary:hover {
-  background: var(--soft-peach-hover);
-  color: #041115;
+  background: var(--mint-hover);
+  color: #041210;
   transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(15, 61, 71, 0.45);
+  box-shadow: 0 6px 24px rgba(94, 234, 212, 0.3);
 }
 
 .home-button.secondary {
-  background: rgba(255, 255, 255, 0.85);
-  color: var(--deep-teal);
-  border: 1.5px solid rgba(15, 61, 71, 0.35);
-  box-shadow: 0 4px 14px rgba(15, 61, 71, 0.16);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-main);
+  border: 1px solid var(--card-border);
 }
 
 .home-button.secondary:hover {
-  background: rgba(245, 158, 123, 0.18);
-  border-color: var(--soft-peach);
-  color: var(--deep-teal);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--primary-mint);
+  color: #ffffff;
   transform: translateY(-2px);
-  box-shadow: 0 8px 22px rgba(15, 61, 71, 0.28);
 }
 
-/* Secondary Actions */
+/* Secondary Actions (Developer View & Download CV) */
 .home-secondary-actions {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-top: 18px;
   font-size: 13px;
-  color: #475569;
+  color: var(--text-muted);
 }
 
 .home-sublink {
-  color: var(--deep-teal);
-  font-weight: 600;
+  color: var(--text-muted);
+  font-weight: 500;
   transition: color 0.15s ease;
   text-decoration: none;
 }
 
 .home-sublink:hover {
-  color: #072025;
+  color: var(--primary-mint);
   text-decoration: underline;
 }
 
 .action-bullet {
-  color: #94a3b8;
+  color: var(--text-subtle);
   font-size: 10px;
 }
 
 .home-availability {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 10px;
-  color: var(--deep-teal);
+  color: var(--text-muted);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   margin-top: 24px;
-  background: rgba(15, 61, 71, 0.06);
-  border: 1px solid rgba(15, 61, 71, 0.18);
-  padding: 6px 14px;
-  border-radius: 9999px;
-  box-shadow: 0 2px 8px rgba(15, 61, 71, 0.08);
 }
 
 .status-indicator-dot {
   width: 8px;
   height: 8px;
-  background: var(--deep-teal);
+  background: var(--primary-mint);
   border-radius: 50%;
-  box-shadow: 0 0 10px rgba(15, 61, 71, 0.6);
+  box-shadow: 0 0 12px var(--primary-mint);
 }
 
 /* ==========================================================================
-   Portrait Frame & Carousel with Deep-Teal #0F3D47 Box Shadows
+   Simplified, Sleek Portrait Frame & Carousel
    ========================================================================== */
 .portrait-showcase {
   position: relative;
@@ -505,9 +427,9 @@ main, .site-header {
   aspect-ratio: 4 / 5;
   border-radius: 24px;
   overflow: hidden;
-  background: #ffffff;
-  border: 1px solid rgba(15, 61, 71, 0.22);
-  box-shadow: 0 24px 60px -10px rgba(15, 61, 71, 0.42), 0 0 0 1px rgba(15, 61, 71, 0.14);
+  background: var(--bg-surface);
+  border: 1px solid rgba(94, 234, 212, 0.3);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.5), 0 0 32px var(--mint-glow);
 }
 
 .portrait-slide {
@@ -532,16 +454,16 @@ main, .site-header {
   transform: scale(1);
 }
 
-/* Portrait Card Badges with Deep-Teal #0F3D47 Box Shadow */
+/* Simplified, Unobtrusive Overlays */
 .portrait-card {
   position: absolute;
   z-index: 2;
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(14px);
-  border: 1px solid rgba(15, 61, 71, 0.25);
+  background: rgba(12, 19, 36, 0.92);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--card-border);
   border-radius: 10px;
-  box-shadow: 0 12px 34px rgba(15, 61, 71, 0.32);
-  color: #081a20;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+  color: var(--text-main);
 }
 
 .skill-card {
@@ -558,18 +480,18 @@ main, .site-header {
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 1.4px;
-  color: var(--deep-teal);
+  color: var(--text-subtle);
   text-transform: uppercase;
 }
 
 .skill-card strong {
   font-size: 15px;
-  color: var(--deep-teal);
+  color: var(--primary-mint);
 }
 
 .skill-card > span:last-child {
   font-size: 11px;
-  color: #475569;
+  color: var(--text-muted);
 }
 
 .info-card {
@@ -584,14 +506,14 @@ main, .site-header {
 .info-card strong {
   font-size: 13px;
   display: block;
-  color: var(--deep-teal);
+  color: var(--text-main);
 }
 
 .card-symbol {
   font-size: 18px;
-  color: var(--deep-teal);
+  color: var(--primary-mint);
   font-weight: 700;
-  background: rgba(15, 61, 71, 0.08);
+  background: var(--mint-tint);
   padding: 2px 6px;
   border-radius: 4px;
 }
@@ -602,10 +524,9 @@ main, .site-header {
   justify-content: space-between;
   gap: 12px;
   padding-top: 18px;
-  color: var(--deep-teal);
+  color: var(--text-muted);
   font-size: 11px;
   font-variant-numeric: tabular-nums;
-  font-weight: 600;
 }
 
 .portrait-dots {
@@ -618,38 +539,34 @@ main, .site-header {
   height: 10px;
   padding: 0;
   border-radius: 50%;
-  background: rgba(15, 61, 71, 0.22);
+  background: rgba(255, 255, 255, 0.2);
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .portrait-dot.active {
-  background: var(--soft-peach);
-  box-shadow: 0 0 10px rgba(245, 158, 123, 0.8);
+  background: var(--primary-mint);
+  box-shadow: 0 0 10px var(--primary-mint);
   transform: scale(1.2);
 }
 
 #portrait-pause {
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(15, 61, 71, 0.25);
-  color: var(--deep-teal);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--card-border);
+  color: var(--text-muted);
   padding: 5px 12px;
   border-radius: 6px;
   cursor: pointer;
   font-size: 11px;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(15, 61, 71, 0.12);
+  font-weight: 500;
   transition: all 0.15s ease;
 }
 
 #portrait-pause:hover {
-  background: var(--soft-peach);
-  color: var(--soft-peach-text);
-  border-color: var(--soft-peach);
-}
-  border-color: var(--primary-mint);
+  background: rgba(255, 255, 255, 0.1);
   color: var(--text-main);
+  border-color: var(--primary-mint);
 }
 
 .home-divider {
@@ -657,8 +574,7 @@ main, .site-header {
   justify-content: space-between;
   align-items: center;
   gap: 20px;
-  border-top: 2px solid var(--deep-teal);
-  box-shadow: 0 -2px 14px rgba(15, 61, 71, 0.28);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   padding-top: 24px;
   padding-bottom: 24px;
   color: var(--text-subtle);
@@ -670,12 +586,12 @@ main, .site-header {
   text-decoration: none;
   letter-spacing: 0;
   font-size: 13px;
-  color: var(--soft-peach);
-  font-weight: 700;
+  color: var(--primary-mint);
+  font-weight: 500;
 }
 
 .home-divider a:hover {
-  color: var(--soft-peach-hover);
+  color: var(--mint-hover);
   text-decoration: underline;
 }
 
