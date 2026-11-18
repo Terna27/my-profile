@@ -1,0 +1,248 @@
+/* ==========================================================================
+   Procedural Spider Web Crawler & DOM Physics Overlay
+   Stylized Wireframe Cyber Aesthetic & DOM Foothold Snapping
+   ========================================================================== */
+
+:root {
+  --spider-primary: var(--primary-mint, #5eead4);
+  --spider-secondary: var(--mint-accent, #7ce0c3);
+  --spider-accent: #38bdf8;
+  --spider-glow: rgba(94, 234, 212, 0.35);
+  --spider-glow-strong: rgba(94, 234, 212, 0.75);
+  --spider-hud-bg: rgba(7, 12, 24, 0.88);
+  --spider-hud-border: rgba(94, 234, 212, 0.25);
+  --spider-text: #f8fafc;
+  --spider-text-muted: #94a3b8;
+  --spider-mono-font: 'Fira Code', 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+}
+
+/* Fullscreen Overlay Canvas - strictly transparent to clicks */
+#spider-crawler-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 99990;
+  display: block;
+}
+
+/* Subtle Reactive Distortion on DOM Elements anchored by Spider Feet */
+.spider-anchored {
+  transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 0.25s ease,
+              border-color 0.25s ease,
+              text-shadow 0.2s ease !important;
+  box-shadow: 0 0 14px var(--spider-glow) !important;
+  border-color: rgba(94, 234, 212, 0.65) !important;
+  outline: 1px dashed rgba(94, 234, 212, 0.45);
+  outline-offset: 2px;
+}
+
+/* If text nodes/links are anchored */
+a.spider-anchored,
+span.spider-anchored,
+h1.spider-anchored,
+h2.spider-anchored,
+h3.spider-anchored,
+p.spider-anchored {
+  text-shadow: 0 0 8px rgba(94, 234, 212, 0.6);
+}
+
+/* Cyber Floating HUD Widget */
+.spider-hud-widget {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 99995;
+  font-family: var(--spider-mono-font);
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--spider-text);
+  background: var(--spider-hud-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--spider-hud-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), 0 0 15px rgba(94, 234, 212, 0.15);
+  pointer-events: auto;
+  user-select: none;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  max-width: 320px;
+}
+
+.spider-hud-widget.is-collapsed {
+  max-width: 175px;
+  background: rgba(7, 12, 24, 0.92);
+}
+
+.spider-hud-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(94, 234, 212, 0.08);
+  border-bottom: 1px solid rgba(94, 234, 212, 0.15);
+  cursor: pointer;
+  gap: 8px;
+}
+
+.spider-hud-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--spider-primary);
+  text-transform: uppercase;
+}
+
+.spider-hud-badge {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--spider-primary);
+  box-shadow: 0 0 6px var(--spider-primary);
+  animation: spider-pulse 2s infinite ease-in-out;
+}
+
+.spider-hud-widget.is-paused .spider-hud-badge {
+  background: #f59e0b;
+  box-shadow: 0 0 6px #f59e0b;
+  animation: none;
+}
+
+.spider-hud-toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--spider-text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 10px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.spider-hud-toggle-btn:hover {
+  color: var(--spider-text);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.spider-hud-body {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.spider-hud-widget.is-collapsed .spider-hud-body {
+  display: none;
+}
+
+.spider-hud-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.spider-hud-label {
+  color: var(--spider-text-muted);
+  font-size: 10px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.spider-hud-value {
+  color: var(--spider-primary);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 170px;
+}
+
+.spider-hud-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.spider-btn {
+  flex: 1;
+  background: rgba(94, 234, 212, 0.1);
+  border: 1px solid rgba(94, 234, 212, 0.3);
+  color: var(--spider-primary);
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.spider-btn:hover {
+  background: var(--spider-primary);
+  color: #070c18;
+  box-shadow: 0 0 10px var(--spider-glow);
+}
+
+.spider-btn.active {
+  background: var(--spider-primary);
+  color: #070c18;
+}
+
+.spider-hud-hint {
+  font-size: 9px;
+  color: var(--spider-text-muted);
+  text-align: center;
+  margin-top: 2px;
+  opacity: 0.8;
+}
+
+.spider-hud-hint kbd {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  padding: 1px 4px;
+  color: var(--spider-text);
+  font-family: inherit;
+}
+
+@keyframes spider-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 0.5;
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  #spider-crawler-canvas {
+    display: none !important;
+  }
+  .spider-hud-widget {
+    display: none !important;
+  }
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 640px) {
+  .spider-hud-widget {
+    bottom: 16px;
+    right: 16px;
+    max-width: 220px;
+  }
+}

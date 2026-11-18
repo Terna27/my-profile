@@ -9,6 +9,8 @@
 
     <!-- Global Styles -->
     <link rel="stylesheet" href="/static/css/client.css">
+    <!-- Procedural Spider Crawler & DOM Physics Overlay -->
+    <link rel="stylesheet" href="/static/css/spider-crawler.css">
 
 </head>
 
@@ -16,7 +18,8 @@
 
     {{ template "content" . }}
 
-
+    <!-- Spider Crawler Overlay Script -->
+    <script src="/static/js/spider-crawler.js" defer></script>
 </body>
 </html>
 {{ end }}
