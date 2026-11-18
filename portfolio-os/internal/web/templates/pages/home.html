@@ -47,8 +47,106 @@
 </header>
 
 <main>
-  <!-- Hero Section -->
-  <section id="hero" class="home-hero container" aria-labelledby="home-title">
+  <!-- Hero Section (First Section with Ice-White #F4F8FA Background & Deep-Teal #0F3D47 Abstract Workspace) -->
+  <section id="hero" class="home-hero-section" aria-labelledby="home-title">
+    <!-- Abstract Table & Chair Workspace in Deep-Teal #0F3D47 -->
+    <div class="hero-workspace-bg" aria-hidden="true">
+      <svg class="workspace-svg" viewBox="0 0 1440 700" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <linearGradient id="deepTealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#0F3D47" stop-opacity="0.95" />
+            <stop offset="100%" stop-color="#09272d" stop-opacity="1" />
+          </linearGradient>
+          <linearGradient id="deepTealGlass" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#0F3D47" stop-opacity="0.16" />
+            <stop offset="100%" stop-color="#0F3D47" stop-opacity="0.04" />
+          </linearGradient>
+        </defs>
+
+        <!-- Floor Baseline & Subtle Ash Workspace Guides -->
+        <line x1="80" y1="620" x2="1360" y2="620" stroke="#0F3D47" stroke-width="2" stroke-opacity="0.3" stroke-linecap="round"/>
+        <line x1="160" y1="645" x2="1280" y2="645" stroke="#0F3D47" stroke-width="1.2" stroke-opacity="0.18" stroke-dasharray="8 8"/>
+        <line x1="260" y1="665" x2="1180" y2="665" stroke="#0F3D47" stroke-width="1" stroke-opacity="0.12" stroke-dasharray="5 5"/>
+
+        <!-- ==================== ABSTRACT TABLE (DEEP-TEAL #0F3D47) ==================== -->
+        <g id="workspace-table" class="workspace-object">
+          <!-- Trestle Legs (Back) -->
+          <line x1="435" y1="410" x2="385" y2="620" stroke="#0F3D47" stroke-width="6.5" stroke-linecap="round" stroke-opacity="0.85"/>
+          <line x1="510" y1="410" x2="550" y2="620" stroke="#0F3D47" stroke-width="4.5" stroke-linecap="round" stroke-opacity="0.85"/>
+          <line x1="365" y1="620" x2="570" y2="620" stroke="#0F3D47" stroke-width="5.5" stroke-linecap="round"/>
+
+          <line x1="965" y1="410" x2="1015" y2="620" stroke="#0F3D47" stroke-width="6.5" stroke-linecap="round" stroke-opacity="0.85"/>
+          <line x1="890" y1="410" x2="850" y2="620" stroke="#0F3D47" stroke-width="4.5" stroke-linecap="round" stroke-opacity="0.85"/>
+          <line x1="830" y1="620" x2="1035" y2="620" stroke="#0F3D47" stroke-width="5.5" stroke-linecap="round"/>
+
+          <!-- Structural Crossbeam -->
+          <line x1="455" y1="510" x2="945" y2="510" stroke="#0F3D47" stroke-width="3" stroke-opacity="0.7"/>
+
+          <!-- Main Desktop Slab (Isometric Chamfered Tabletop in Deep-Teal) -->
+          <polygon points="410,380 990,380 940,412 360,412" fill="url(#deepTealGrad)" stroke="#0F3D47" stroke-width="2.5"/>
+          <polygon points="360,412 940,412 940,424 360,424" fill="#072025" stroke="#0F3D47" stroke-width="2"/>
+
+          <!-- Desktop Accessories in Deep-Teal -->
+          <!-- Modern Articulated Task Lamp -->
+          <path d="M 430 380 L 450 380" stroke="#0F3D47" stroke-width="4.5" stroke-linecap="round"/>
+          <polyline points="440,380 460,285 415,225 455,205" fill="none" stroke="#0F3D47" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <polygon points="450,195 480,225 458,235" fill="#0F3D47" stroke="#0F3D47" stroke-width="2"/>
+          <polygon points="465,230 540,380 435,380" fill="#F59E7B" fill-opacity="0.08"/>
+
+          <!-- Ultra-Wide Curved Display in Deep-Teal Wireframe & Glass -->
+          <path d="M 700 380 L 700 290 M 665 380 L 735 380" stroke="#0F3D47" stroke-width="4" stroke-linecap="round"/>
+          <rect x="560" y="160" width="280" height="130" rx="8" fill="url(#deepTealGlass)" stroke="#0F3D47" stroke-width="3"/>
+          <line x1="585" y1="188" x2="665" y2="188" stroke="#0F3D47" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.9"/>
+          <line x1="585" y1="205" x2="735" y2="205" stroke="#0F3D47" stroke-width="2" stroke-linecap="round" stroke-opacity="0.6"/>
+          <line x1="585" y1="222" x2="700" y2="222" stroke="#0F3D47" stroke-width="2" stroke-linecap="round" stroke-opacity="0.6"/>
+          <line x1="585" y1="239" x2="640" y2="239" stroke="#0F3D47" stroke-width="2" stroke-linecap="round" stroke-opacity="0.4"/>
+
+          <!-- Desk Pad & Devices in Deep-Teal -->
+          <rect x="610" y="386" width="180" height="18" rx="3" fill="#0F3D47" fill-opacity="0.85"/>
+          <rect x="635" y="389" width="80" height="9" rx="2" fill="#072025"/>
+          <rect x="740" y="389" width="15" height="9" rx="3" fill="#072025"/>
+          <rect x="820" y="386" width="26" height="15" rx="2" fill="#0F3D47" fill-opacity="0.4" stroke="#0F3D47" stroke-width="1.2"/>
+        </g>
+
+        <!-- ==================== ABSTRACT OFFICE CHAIR (DEEP-TEAL #0F3D47) ==================== -->
+        <g id="workspace-chair" class="workspace-object">
+          <!-- Ergonomic High-Back Backrest in Deep-Teal -->
+          <path d="M 670 310 C 665 260 690 230 725 230 C 760 230 785 260 780 310 C 775 355 770 395 764 416 L 686 416 C 680 395 675 355 670 310 Z"
+                fill="#0F3D47" fill-opacity="0.28" stroke="#0F3D47" stroke-width="3.5"/>
+          <!-- Ribbed Lumbar Supports -->
+          <path d="M 678 290 C 705 302 745 302 772 290" fill="none" stroke="#0F3D47" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M 681 332 C 705 344 745 344 769 332" fill="none" stroke="#0F3D47" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M 684 374 C 705 386 745 386 766 374" fill="none" stroke="#0F3D47" stroke-width="2.5" stroke-linecap="round"/>
+
+          <!-- Sculpted Seat Cushion in Solid Deep-Teal -->
+          <ellipse cx="725" cy="442" rx="60" ry="17" fill="url(#deepTealGrad)" stroke="#0F3D47" stroke-width="2.5"/>
+
+          <!-- Contemporary Cantilever Armrests -->
+          <path d="M 660 395 L 648 360 L 676 360" fill="none" stroke="#0F3D47" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M 790 395 L 802 360 L 774 360" fill="none" stroke="#0F3D47" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+          <!-- Pneumatic Gas Lift Piston -->
+          <line x1="725" y1="455" x2="725" y2="538" stroke="#0F3D47" stroke-width="8" stroke-linecap="round"/>
+          <circle cx="725" cy="540" r="7" fill="#0F3D47"/>
+
+          <!-- 5-Star Wheeled Base / Casters in Deep-Teal -->
+          <line x1="725" y1="540" x2="645" y2="575" stroke="#0F3D47" stroke-width="4.5" stroke-linecap="round"/>
+          <line x1="725" y1="540" x2="805" y2="575" stroke="#0F3D47" stroke-width="4.5" stroke-linecap="round"/>
+          <line x1="725" y1="540" x2="695" y2="595" stroke="#0F3D47" stroke-width="4.5" stroke-linecap="round"/>
+          <line x1="725" y1="540" x2="755" y2="595" stroke="#0F3D47" stroke-width="4.5" stroke-linecap="round"/>
+          <line x1="725" y1="540" x2="725" y2="570" stroke="#0F3D47" stroke-width="4.5" stroke-linecap="round"/>
+
+          <!-- Casters in Deep-Teal -->
+          <circle cx="643" cy="580" r="5" fill="#0F3D47"/>
+          <circle cx="807" cy="580" r="5" fill="#0F3D47"/>
+          <circle cx="693" cy="601" r="5" fill="#0F3D47"/>
+          <circle cx="757" cy="601" r="5" fill="#0F3D47"/>
+          <circle cx="725" cy="576" r="5" fill="#0F3D47"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="home-hero container">
     <div class="home-intro">
       <p class="home-eyebrow">BACKEND SYSTEMS &amp; AI AUTOMATION</p>
       <h1 id="home-title">I build backend systems<br><span>and AI automations.</span></h1>
@@ -126,7 +224,8 @@
         <button type="button" id="portrait-pause" aria-label="Pause portrait rotation" aria-pressed="false">Pause</button>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
   <div class="home-divider container">
     <span>BUILDING WITH PURPOSE &amp; RESILIENCE</span>
