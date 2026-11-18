@@ -1,8 +1,7 @@
 /**
  * Procedural Spider Web Crawler Overlay
  * Realistic 3-bone/2-bone Inverse Kinematics (IK), DOM Foothold Snapping,
- * Multi-Chromatic Bright Neon Aesthetics, Trailing Silk Web Physics,
- * Scroll Synchronization & Autonomous Roaming.
+ * Trailing Silk Web Physics, Scroll Synchronization & Autonomous Roaming.
  *
  * (c) Terna Peter Portfolio OS
  */
@@ -30,53 +29,44 @@
   };
 
   /* ---------------------------------------------------------
-     2. Configuration & Vibrant Multi-Color Neon Palette
+     2. Configuration & Theme Variables
      --------------------------------------------------------- */
-  // Spider size reduced by 40% (scale = 0.60)
-  const SCALE = 0.60;
-
   const CONFIG = {
-    scale: SCALE,
+    scale: 1.3, // Size scaling factor (+30%)
     legCount: 8,
-    // Leg segment lengths scaled down by 40%
-    femurLen: 24 * SCALE,   // 14.4px
-    tibiaLen: 28 * SCALE,   // 16.8px
-    tarsusLen: 18 * SCALE,  // 10.8px
-    get maxReach() { return this.femurLen + this.tibiaLen + this.tarsusLen - 1.5; },
+    // Leg segment lengths in pixels
+    get femurLen() { return 24 * this.scale; },
+    get tibiaLen() { return 28 * this.scale; },
+    get tarsusLen() { return 18 * this.scale; },
+    // Max reach
+    get maxReach() { return this.femurLen + this.tibiaLen + this.tarsusLen - 2; },
     // Step triggering
-    stepDistanceThreshold: 34 * SCALE, // 20.4px
-    stepSpeed: 0.18,
-    stepLiftHeight: 18 * SCALE, // 10.8px
-    maxVelocity: 5.2,
+    get stepDistanceThreshold() { return 34 * this.scale; },
+    stepSpeed: 0.16, // Progress per tick
+    maxVelocity: 5.5,
     dartVelocity: 14.0,
-    turnSpeed: 0.15,
+    turnSpeed: 0.14,
     idleTimeoutMs: 3000,
-    // Bright Multi-Chromatic Neon Color Palette
+    scanIntervalMs: 1200,
     colors: {
-      cyan: '#00f5ff',          // Electric Neon Cyan
-      magenta: '#ff007f',       // Hot Neon Magenta / Pink
-      lime: '#39ff14',          // Electric Neon Lime / Green
-      gold: '#ffd600',          // Solar Neon Amber / Gold
-      purple: '#bf5af2',        // Electric Violet
-      white: '#ffffff',         // Pure Blazing White
+      primary: '#5eead4',
+      secondary: '#7ce0c3',
+      accent: '#38bdf8',
+      glow: 'rgba(94, 234, 212, 0.4)',
+      glowSoft: 'rgba(94, 234, 212, 0.15)',
       bodyDark: 'rgba(7, 12, 24, 0.92)',
-      glowCyan: 'rgba(0, 245, 255, 0.75)',
-      glowMagenta: 'rgba(255, 0, 127, 0.85)',
-      glowLime: 'rgba(57, 255, 20, 0.85)',
-      glowGold: 'rgba(255, 214, 0, 0.75)'
-    },
-    // Vibrant accent colors assigned across the 8 legs
-    legAccents: [
-      { primary: '#00f5ff', secondary: '#ff007f', glow: 'rgba(0, 245, 255, 0.7)' },
-      { primary: '#ff007f', secondary: '#39ff14', glow: 'rgba(255, 0, 127, 0.7)' },
-      { primary: '#39ff14', secondary: '#00f5ff', glow: 'rgba(57, 255, 20, 0.7)' },
-      { primary: '#ffd600', secondary: '#ff007f', glow: 'rgba(255, 214, 0, 0.7)' },
-      { primary: '#00f5ff', secondary: '#ff007f', glow: 'rgba(0, 245, 255, 0.7)' },
-      { primary: '#ff007f', secondary: '#39ff14', glow: 'rgba(255, 0, 127, 0.7)' },
-      { primary: '#39ff14', secondary: '#00f5ff', glow: 'rgba(57, 255, 20, 0.7)' },
-      { primary: '#ffd600', secondary: '#ff007f', glow: 'rgba(255, 214, 0, 0.7)' }
-    ]
+      reticle: '#5eead4'
+    }
   };
+
+  // Read site CSS variables if available
+  function updateThemeColors() {
+    const computed = getComputedStyle(document.documentElement);
+    const p = computed.getPropertyValue('--primary-mint').trim() || computed.getPropertyValue('--spider-primary').trim();
+    const s = computed.getPropertyValue('--mint-accent').trim() || computed.getPropertyValue('--spider-secondary').trim();
+    if (p) CONFIG.colors.primary = p;
+    if (s) CONFIG.colors.secondary = s;
+  }
 
   /* ---------------------------------------------------------
      3. DOM Scanner & Spatial Foothold Snapping
@@ -85,7 +75,7 @@
     constructor() {
       this.elements = [];
       this.footholds = []; // Array of { x, y, el, tag, type } in page coordinates
-      this.anchoredElements = new Map(); // el => { count, origTransform, origBoxShadow, origBorder, accentColor }
+      this.anchoredElements = new Map(); // el => { count, pullX, pullY }
       this.lastScanTime = 0;
       this.selector = [
         'h1', 'h2', 'h3', 'h4', 'a', 'button', 'p', 'span.card-eyebrow',
@@ -98,7 +88,7 @@
 
     scan() {
       const now = performance.now();
-      if (now - this.lastScanTime < 500) return; // Prevent layout thrashing
+      if (now - this.lastScanTime < 600) return; // Prevent layout thrashing
       this.lastScanTime = now;
 
       const viewportTop = window.scrollY - 300;
@@ -158,7 +148,7 @@
       this.footholds = newFootholds;
     }
 
-    findClosestFoothold(targetX, targetY, maxRadius = 45) {
+    findClosestFoothold(targetX, targetY, maxRadius = 60) {
       let closest = null;
       let minD = maxRadius;
 
@@ -171,11 +161,12 @@
         }
       }
 
-      return closest;
+      return closest; // May be null if no DOM element close enough
     }
 
     getRandomInterestingElement() {
       if (!this.elements.length) return null;
+      // Filter for interactive or heading elements first
       const preferred = this.elements.filter(e => 
         ['h1', 'h2', 'h3', 'a', 'button'].includes(e.tag) || e.el.classList.contains('card') || e.el.classList.contains('skill-card')
       );
@@ -183,38 +174,22 @@
       return pool[Math.floor(Math.random() * pool.length)];
     }
 
-    applyAnchor(el, spiderX, spiderY, legIndex = 0) {
+    applyAnchor(el, spiderX, spiderY) {
       if (!el || !el.getBoundingClientRect) return;
       let entry = this.anchoredElements.get(el);
       if (!entry) {
-        entry = {
-          count: 0,
-          origTransform: el.style.transform || '',
-          origBoxShadow: el.style.boxShadow || '',
-          origBorderColor: el.style.borderColor || '',
-          accentColor: CONFIG.legAccents[legIndex % CONFIG.legAccents.length].primary
-        };
+        entry = { count: 0, origTransform: el.style.transform || '' };
         this.anchoredElements.set(el, entry);
         el.classList.add('spider-anchored');
       }
       entry.count++;
 
-      // Vibrant bright neon colors when legs touch down on elements
-      const brightGlow = entry.accentColor === '#ff007f'
-        ? '0 0 20px rgba(255, 0, 127, 0.85), 0 0 35px rgba(0, 245, 255, 0.6)'
-        : entry.accentColor === '#39ff14'
-        ? '0 0 20px rgba(57, 255, 20, 0.85), 0 0 35px rgba(255, 0, 127, 0.5)'
-        : '0 0 20px rgba(0, 245, 255, 0.85), 0 0 35px rgba(255, 0, 127, 0.6)';
-
-      el.style.borderColor = entry.accentColor;
-      el.style.boxShadow = brightGlow;
-
       // Subtle reactive displacement towards spider
       const rect = el.getBoundingClientRect();
       const centerX = rect.left + window.scrollX + rect.width * 0.5;
       const centerY = rect.top + window.scrollY + rect.height * 0.5;
-      const dx = clamp((spiderX - centerX) * 0.025, -3, 3);
-      const dy = clamp((spiderY - centerY) * 0.025, -3, 3);
+      const dx = clamp((spiderX - centerX) * 0.02, -3.5, 3.5);
+      const dy = clamp((spiderY - centerY) * 0.02, -3.5, 3.5);
 
       el.style.transform = `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0) scale(0.995)`;
     }
@@ -227,8 +202,6 @@
       if (entry.count <= 0) {
         el.classList.remove('spider-anchored');
         el.style.transform = entry.origTransform;
-        el.style.boxShadow = entry.origBoxShadow;
-        el.style.borderColor = entry.origBorderColor;
         this.anchoredElements.delete(el);
       }
     }
@@ -237,35 +210,33 @@
       for (const [el, entry] of this.anchoredElements.entries()) {
         el.classList.remove('spider-anchored');
         el.style.transform = entry.origTransform;
-        el.style.boxShadow = entry.origBoxShadow;
-        el.style.borderColor = entry.origBorderColor;
       }
       this.anchoredElements.clear();
     }
   }
 
   /* ---------------------------------------------------------
-     4. Multi-Color Silk Web Rope Simulator (Verlet Physics)
+     4. Silk Web Rope Simulator (Verlet Tension & Sag)
      --------------------------------------------------------- */
   class SilkWebTrail {
     constructor() {
-      this.points = [];
-      this.maxNodes = 20;
-      this.segmentLength = 16 * SCALE;
+      this.points = []; // Array of { x, y, oldX, oldY, pinned } in page coords
+      this.maxNodes = 24;
+      this.segmentLength = 22;
       this.activeRappelling = false;
-      this.grappleLine = null;
+      this.grappleLine = null; // { startX, startY, endX, endY, progress, active }
     }
 
     addAnchor(x, y) {
       if (this.points.length === 0) {
-        this.points.push({ x, y, oldX: x, oldY: y, pinned: true });
+        this.points.push({ x, y, oldX: x, oldY: y, pinned: true, alpha: 1.0 });
         return;
       }
 
       const last = this.points[this.points.length - 1];
       const d = dist(last.x, last.y, x, y);
-      if (d > 20 * SCALE) {
-        this.points.push({ x, y, oldX: x, oldY: y, pinned: false });
+      if (d > 28) {
+        this.points.push({ x, y, oldX: x, oldY: y, pinned: false, alpha: 1.0 });
         if (this.points.length > this.maxNodes) {
           this.points.shift();
         }
@@ -285,19 +256,21 @@
 
     update(spinneretX, spinneretY) {
       if (this.points.length > 0) {
+        // Connect head of silk to current spinneret
         const head = this.points[this.points.length - 1];
         head.x = spinneretX;
         head.y = spinneretY;
       } else {
-        this.points.push({ x: spinneretX, y: spinneretY, oldX: spinneretX, oldY: spinneretY, pinned: true });
+        this.points.push({ x: spinneretX, y: spinneretY, oldX: spinneretX, oldY: spinneretY, pinned: true, alpha: 1 });
       }
 
+      // Verlet physics for silk sagging & tension
       for (let i = 0; i < this.points.length; i++) {
         const pt = this.points[i];
         if (pt.pinned) continue;
 
         const vx = (pt.x - pt.oldX) * 0.92;
-        const vy = (pt.y - pt.oldY) * 0.92 + 0.10;
+        const vy = (pt.y - pt.oldY) * 0.92 + 0.12; // Slight gravity sag
 
         pt.oldX = pt.x;
         pt.oldY = pt.y;
@@ -305,6 +278,7 @@
         pt.y += vy;
       }
 
+      // Distance constraints relaxation
       for (let iter = 0; iter < 3; iter++) {
         for (let i = 0; i < this.points.length - 1; i++) {
           const p1 = this.points[i];
@@ -329,8 +303,9 @@
         }
       }
 
+      // Update active grapple line
       if (this.grappleLine && this.grappleLine.active) {
-        this.grappleLine.progress += 0.16;
+        this.grappleLine.progress += 0.15;
         if (this.grappleLine.progress >= 1.0) {
           this.grappleLine.progress = 1.0;
         }
@@ -340,8 +315,9 @@
     render(ctx, scrollX, scrollY) {
       if (this.points.length < 2) return;
 
+      // Draw trailing silk web
       ctx.save();
-      ctx.lineWidth = 1.1;
+      ctx.lineWidth = 1.0;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
 
@@ -356,23 +332,21 @@
         ctx.lineTo(px, py);
       }
 
-      // Bright multi-color gradient silk
       const grad = ctx.createLinearGradient(
         firstX, firstY,
         this.points[this.points.length - 1].x - scrollX,
         this.points[this.points.length - 1].y - scrollY
       );
-      grad.addColorStop(0, 'rgba(255, 0, 127, 0.08)');
-      grad.addColorStop(0.4, 'rgba(0, 245, 255, 0.55)');
-      grad.addColorStop(0.8, 'rgba(57, 255, 20, 0.75)');
-      grad.addColorStop(1, 'rgba(255, 255, 255, 0.95)');
+      grad.addColorStop(0, 'rgba(94, 234, 212, 0.05)');
+      grad.addColorStop(0.7, 'rgba(94, 234, 212, 0.45)');
+      grad.addColorStop(1, 'rgba(255, 255, 255, 0.85)');
 
       ctx.strokeStyle = grad;
-      ctx.shadowColor = CONFIG.colors.glowCyan;
-      ctx.shadowBlur = 6;
+      ctx.shadowColor = CONFIG.colors.glow;
+      ctx.shadowBlur = 4;
       ctx.stroke();
 
-      // Grapple zip line
+      // Render grapple zip beam if active
       if (this.grappleLine && this.grappleLine.active) {
         const g = this.grappleLine;
         const curX = lerp(g.fromX, g.toX, g.progress) - scrollX;
@@ -382,25 +356,25 @@
         ctx.moveTo(g.fromX - scrollX, g.fromY - scrollY);
         ctx.lineTo(curX, curY);
         ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1.8;
-        ctx.shadowColor = CONFIG.colors.magenta;
-        ctx.shadowBlur = 10;
+        ctx.lineWidth = 2.0;
+        ctx.shadowColor = CONFIG.colors.primary;
+        ctx.shadowBlur = 8;
         ctx.stroke();
 
+        // Tip dart projectile
         ctx.beginPath();
         ctx.arc(curX, curY, 3, 0, Math.PI * 2);
-        ctx.fillStyle = CONFIG.colors.magenta;
-        ctx.shadowColor = CONFIG.colors.glowMagenta;
-        ctx.shadowBlur = 8;
+        ctx.fillStyle = CONFIG.colors.primary;
         ctx.fill();
 
-        if (g.progress >= 0.7) {
+        // Expanding grapple reticle
+        if (g.progress >= 0.8) {
           const destX = g.toX - scrollX;
           const destY = g.toY - scrollY;
           ctx.beginPath();
-          ctx.arc(destX, destY, 7 + (1.0 - g.progress) * 16, 0, Math.PI * 2);
-          ctx.strokeStyle = CONFIG.colors.cyan;
-          ctx.lineWidth = 1.4;
+          ctx.arc(destX, destY, 8 + (1.0 - g.progress) * 20, 0, Math.PI * 2);
+          ctx.strokeStyle = CONFIG.colors.primary;
+          ctx.lineWidth = 1.2;
           ctx.stroke();
         }
       }
@@ -410,13 +384,13 @@
   }
 
   /* ---------------------------------------------------------
-     5. Multi-Color Spider Leg & 3-Joint Inverse Kinematics
+     5. Spider Leg & 3-Joint Inverse Kinematics
      --------------------------------------------------------- */
   class SpiderLeg {
     constructor(index, side, angleOffset, reachDistance) {
       this.index = index;
       this.side = side; // -1 for Left, 1 for Right
-      this.angleOffset = angleOffset;
+      this.angleOffset = angleOffset; // Resting angle relative to body spine
       this.reachDistance = reachDistance;
 
       // Group A (0, 2, 5, 7) or Group B (1, 3, 4, 6)
@@ -425,8 +399,9 @@
       // Current foot position in page coords
       this.footX = 0;
       this.footY = 0;
-      this.footZ = 0;
+      this.footZ = 0; // Elevation when lifting
 
+      // Previous and Target positions for stepping
       this.stepStartX = 0;
       this.stepStartY = 0;
       this.stepTargetX = 0;
@@ -434,6 +409,7 @@
       this.isStepping = false;
       this.stepProgress = 1.0;
 
+      // Associated anchored DOM element
       this.anchoredEl = null;
       this.anchorType = 'ground';
       this.anchorTag = '';
@@ -443,15 +419,6 @@
       this.jointKnee = { x: 0, y: 0 };
       this.jointAnkle = { x: 0, y: 0 };
       this.jointTip = { x: 0, y: 0 };
-
-      // Vibrant Colors per leg
-      const accent = CONFIG.legAccents[index % CONFIG.legAccents.length];
-      this.femurColor = CONFIG.colors.cyan;
-      this.tibiaColor = CONFIG.colors.magenta;
-      this.tarsusColor = CONFIG.colors.lime;
-      this.kneeColor = CONFIG.colors.magenta;
-      this.ankleColor = CONFIG.colors.gold;
-      this.tipColor = CONFIG.colors.lime;
     }
 
     initPosition(baseX, baseY, bodyAngle) {
@@ -466,7 +433,8 @@
 
     getIdealTarget(bodyX, bodyY, bodyAngle, vx, vy) {
       const theta = bodyAngle + this.angleOffset;
-      const leadFactor = 3.6;
+      // Velocity lead anticipation
+      const leadFactor = 4.5;
       const targetX = bodyX + Math.cos(theta) * this.reachDistance + vx * leadFactor;
       const targetY = bodyY + Math.sin(theta) * this.reachDistance + vy * leadFactor;
       return { x: targetX, y: targetY };
@@ -475,6 +443,7 @@
     triggerStep(targetX, targetY, snappedFoothold, scanner, spiderX, spiderY) {
       if (this.isStepping) return;
 
+      // Release old anchor
       if (this.anchoredEl) {
         scanner.releaseAnchor(this.anchoredEl);
         this.anchoredEl = null;
@@ -489,7 +458,7 @@
         this.anchoredEl = snappedFoothold.el;
         this.anchorType = snappedFoothold.type;
         this.anchorTag = snappedFoothold.tag.toUpperCase();
-        scanner.applyAnchor(this.anchoredEl, spiderX, spiderY, this.index);
+        scanner.applyAnchor(this.anchoredEl, spiderX, spiderY);
       } else {
         this.stepTargetX = targetX;
         this.stepTargetY = targetY;
@@ -512,11 +481,14 @@
         this.footY = this.stepTargetY;
         this.footZ = 0;
       } else {
+        // Smooth easing interpolation
         const t = this.stepProgress;
+        // Cubic ease-out
         const ease = 1 - Math.pow(1 - t, 3);
         this.footX = lerp(this.stepStartX, this.stepTargetX, ease);
         this.footY = lerp(this.stepStartY, this.stepTargetY, ease);
-        this.footZ = Math.sin(t * Math.PI) * CONFIG.stepLiftHeight;
+        // Parabolic step elevation
+        this.footZ = Math.sin(t * Math.PI) * 18 * CONFIG.scale;
       }
     }
 
@@ -527,49 +499,60 @@
       this.jointCoxa.x = baseX;
       this.jointCoxa.y = baseY;
 
+      // 3D elevation adjustment: lifting foot shifts visual position upward
       const renderFootX = this.footX;
       const renderFootY = this.footY - this.footZ * 0.7;
 
       this.jointTip.x = renderFootX;
       this.jointTip.y = renderFootY;
 
+      // Distance from coxa base to foot
       const dx = renderFootX - baseX;
       const dy = renderFootY - baseY;
       let distTotal = Math.hypot(dx, dy) || 0.001;
 
+      // Clamp distance within reach
       const maxReach = CONFIG.femurLen + CONFIG.tibiaLen + CONFIG.tarsusLen - 1;
       if (distTotal > maxReach) {
         distTotal = maxReach;
       }
 
-      // Unit vector
+      // Unit vector from coxa base to foot
       const dirX = dx / distTotal;
       const dirY = dy / distTotal;
 
-      // Place Ankle
+      // Outward normal vector for knee bending flare
+      // For left legs (side = -1), bend counter-clockwise; for right legs (side = 1), bend clockwise
+      const normX = -dirY * this.side;
+      const normY = dirX * this.side;
+
+      // Place Ankle: tarsus segment reaches from ankle down to foot tip
       const tarsusAngle = Math.atan2(dy, dx) - (0.45 * this.side);
       const ankleX = renderFootX - Math.cos(tarsusAngle) * CONFIG.tarsusLen;
       const ankleY = renderFootY - Math.sin(tarsusAngle) * CONFIG.tarsusLen;
       this.jointAnkle.x = ankleX;
       this.jointAnkle.y = ankleY;
 
-      // Solve 2-bone IK between Coxa Base and Ankle
+      // Solve 2-bone IK between Coxa Base and Ankle with lengths L1 (femur) and L2 (tibia)
       const L1 = CONFIG.femurLen;
       const L2 = CONFIG.tibiaLen;
       const dBA = Math.hypot(ankleX - baseX, ankleY - baseY) || 0.001;
       const clampedD = clamp(dBA, Math.abs(L1 - L2) + 0.1, L1 + L2 - 0.1);
 
+      // Law of Cosines for knee angle
       const cosAlpha = clamp((L1 * L1 + clampedD * clampedD - L2 * L2) / (2 * L1 * clampedD), -1, 1);
       const alpha = Math.acos(cosAlpha);
 
+      // Base to ankle angle
       const baseToAnkleAngle = Math.atan2(ankleY - baseY, ankleX - baseX);
+      // Bend outward depending on side
       const kneeAngle = baseToAnkleAngle + (alpha * -this.side);
 
       this.jointKnee.x = baseX + Math.cos(kneeAngle) * L1;
       this.jointKnee.y = baseY + Math.sin(kneeAngle) * L1;
     }
 
-    render(ctx, scrollX, scrollY) {
+    render(ctx, scrollX, scrollY, activeReticle = false) {
       const coxa = { x: this.jointCoxa.x - scrollX, y: this.jointCoxa.y - scrollY };
       const knee = { x: this.jointKnee.x - scrollX, y: this.jointKnee.y - scrollY };
       const ankle = { x: this.jointAnkle.x - scrollX, y: this.jointAnkle.y - scrollY };
@@ -581,61 +564,63 @@
       // Foot ground contact shadow when stepped
       if (this.footZ > 1) {
         ctx.beginPath();
-        ctx.ellipse(groundTip.x, groundTip.y, 3 * SCALE, 1.5 * SCALE, 0, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.ellipse(groundTip.x, groundTip.y, 4 * CONFIG.scale, 2 * CONFIG.scale, 0, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
         ctx.fill();
 
+        // Lift guide wire
         ctx.beginPath();
         ctx.moveTo(groundTip.x, groundTip.y);
         ctx.lineTo(tip.x, tip.y);
-        ctx.strokeStyle = 'rgba(0, 245, 255, 0.25)';
-        ctx.lineWidth = 0.8;
+        ctx.strokeStyle = 'rgba(94, 234, 212, 0.2)';
+        ctx.lineWidth = 0.8 * CONFIG.scale;
         ctx.stroke();
       }
 
-      ctx.lineWidth = 1.2;
+      // Leg Segments Wireframe
+      ctx.lineWidth = 1.35 * CONFIG.scale;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
 
-      // 1. Femur (Coxa -> Knee): Electric Cyan
+      // 1. Femur (Coxa -> Knee)
       ctx.beginPath();
       ctx.moveTo(coxa.x, coxa.y);
       ctx.lineTo(knee.x, knee.y);
-      ctx.strokeStyle = this.femurColor;
+      ctx.strokeStyle = CONFIG.colors.primary;
       ctx.stroke();
 
-      // 2. Tibia (Knee -> Ankle): Hot Neon Magenta
+      // 2. Tibia (Knee -> Ankle)
       ctx.beginPath();
       ctx.moveTo(knee.x, knee.y);
       ctx.lineTo(ankle.x, ankle.y);
-      ctx.strokeStyle = this.tibiaColor;
+      ctx.strokeStyle = CONFIG.colors.secondary;
       ctx.stroke();
 
-      // 3. Tarsus / Claw (Ankle -> Tip): Bright Electric Lime
+      // 3. Tarsus / Claw (Ankle -> Foot Tip)
       ctx.beginPath();
       ctx.moveTo(ankle.x, ankle.y);
       ctx.lineTo(tip.x, tip.y);
-      ctx.strokeStyle = this.tarsusColor;
+      ctx.strokeStyle = '#ffffff';
       ctx.stroke();
 
-      // Bright glowing multi-color joint nodes
+      // Joint Nodes
       const joints = [
-        { pt: coxa, r: 1.8, fill: CONFIG.colors.cyan, glow: CONFIG.colors.glowCyan },
-        { pt: knee, r: 2.0, fill: this.kneeColor, glow: CONFIG.colors.glowMagenta },
-        { pt: ankle, r: 1.7, fill: this.ankleColor, glow: CONFIG.colors.glowGold },
-        { pt: tip, r: 1.6, fill: this.tipColor, glow: CONFIG.colors.glowLime }
+        { pt: coxa, r: 2.2 * CONFIG.scale, fill: CONFIG.colors.primary },
+        { pt: knee, r: 2.5 * CONFIG.scale, fill: CONFIG.colors.secondary },
+        { pt: ankle, r: 2.0 * CONFIG.scale, fill: '#ffffff' },
+        { pt: tip, r: 1.8 * CONFIG.scale, fill: CONFIG.colors.primary }
       ];
 
       for (const j of joints) {
         ctx.beginPath();
         ctx.arc(j.pt.x, j.pt.y, j.r, 0, Math.PI * 2);
         ctx.fillStyle = j.fill;
-        ctx.shadowColor = j.glow;
-        ctx.shadowBlur = 5;
+        ctx.shadowColor = CONFIG.colors.glow;
+        ctx.shadowBlur = 4;
         ctx.fill();
       }
 
-      // Bright Cyber Target Reticle & Telemetry Label if foot is anchored
+      // Cyber Target Reticle & Coordinate Label if foot is anchored
       if (this.anchoredEl && !this.isStepping) {
         this.renderFootReticle(ctx, groundTip.x, groundTip.y);
       }
@@ -644,58 +629,56 @@
     }
 
     renderFootReticle(ctx, x, y) {
-      const s = 5;
-      const bracketColor = this.index % 2 === 0 ? CONFIG.colors.magenta : CONFIG.colors.cyan;
-      ctx.strokeStyle = bracketColor;
-      ctx.lineWidth = 1.1;
-      ctx.shadowColor = bracketColor === CONFIG.colors.magenta ? CONFIG.colors.glowMagenta : CONFIG.colors.glowCyan;
-      ctx.shadowBlur = 6;
+      const s = 6 * CONFIG.scale;
+      ctx.strokeStyle = CONFIG.colors.primary;
+      ctx.lineWidth = 1.0;
+      ctx.shadowColor = CONFIG.colors.glow;
+      ctx.shadowBlur = 5;
 
       // Small 4-corner brackets
       // Top-Left
       ctx.beginPath();
-      ctx.moveTo(x - s, y - s + 2.5);
+      ctx.moveTo(x - s, y - s + 3);
       ctx.lineTo(x - s, y - s);
-      ctx.lineTo(x - s + 2.5, y - s);
+      ctx.lineTo(x - s + 3, y - s);
       ctx.stroke();
 
       // Top-Right
       ctx.beginPath();
-      ctx.moveTo(x + s - 2.5, y - s);
+      ctx.moveTo(x + s - 3, y - s);
       ctx.lineTo(x + s, y - s);
-      ctx.lineTo(x + s, y - s + 2.5);
+      ctx.lineTo(x + s, y - s + 3);
       ctx.stroke();
 
       // Bottom-Left
       ctx.beginPath();
-      ctx.moveTo(x - s, y + s - 2.5);
+      ctx.moveTo(x - s, y + s - 3);
       ctx.lineTo(x - s, y + s);
-      ctx.lineTo(x - s + 2.5, y + s);
+      ctx.lineTo(x - s + 3, y + s);
       ctx.stroke();
 
       // Bottom-Right
       ctx.beginPath();
-      ctx.moveTo(x + s - 2.5, y + s);
+      ctx.moveTo(x + s - 3, y + s);
       ctx.lineTo(x + s, y + s);
-      ctx.lineTo(x + s, y + s - 2.5);
+      ctx.lineTo(x + s, y + s - 3);
       ctx.stroke();
 
-      // Telemetry label in bright gold
+      // Debug telemetry label near 2 forward feet
       if (this.index === 0 || this.index === 4) {
-        ctx.font = '7.5px monospace';
-        ctx.fillStyle = CONFIG.colors.gold;
-        ctx.shadowColor = CONFIG.colors.glowGold;
-        ctx.shadowBlur = 4;
-        ctx.fillText(`[${Math.round(this.footX)},${Math.round(this.footY)}] <${this.anchorTag}>`, x + 7, y + 2.5);
+        ctx.font = '8px monospace';
+        ctx.fillStyle = CONFIG.colors.primary;
+        ctx.fillText(`[${Math.round(this.footX)},${Math.round(this.footY)}] <${this.anchorTag}>`, x + 9, y + 3);
       }
     }
   }
 
   /* ---------------------------------------------------------
-     6. Procedural Spider Entity & Multi-Color Rig
+     6. Procedural Spider Entity & Gait Engine
      --------------------------------------------------------- */
   class SpiderCrawler {
     constructor() {
+      // Page coordinates
       this.x = window.scrollX + window.innerWidth * 0.5;
       this.y = window.scrollY + window.innerHeight * 0.4;
       this.vx = 0;
@@ -703,51 +686,66 @@
       this.angle = 0;
       this.targetAngle = 0;
 
+      // Control & Target
       this.targetX = this.x;
       this.targetY = this.y;
-      this.mode = 'cursor';
+      this.mode = 'cursor'; // 'cursor' | 'autonomous' | 'dart' | 'rappel'
       this.lastMouseActivity = performance.now();
       this.isPaused = false;
       this.isVisible = true;
 
+      // Micro-pause arachnid behavior
       this.pauseTimer = 0;
       this.isMicroPaused = false;
 
+      // Fast scroll / rappel state
       this.lastScrollY = window.scrollY;
       this.scrollVelocity = 0;
 
-      this.gaitGroup = 0;
+      // Gait Engine: Tetrapod alternating phases
+      this.gaitGroup = 0; // 0 or 1
+      this.gaitTimer = 0;
       this.isWalking = false;
 
+      // Secondary abdomen physics
+      this.abdomenAngle = 0;
+      this.abdomenOffsetX = 0;
+      this.abdomenOffsetY = 0;
+
+      // Subsystems
       this.scanner = new DOMSpatialScanner();
       this.silk = new SilkWebTrail();
       this.autonomousTarget = null;
       this.autonomousTimer = 0;
 
-      // 8 Multi-Segment Legs (scaled by 40% reduction)
+      // Setup 8 Legs
+      // L1, L2, L3, L4 (angles: -38°, -70°, -110°, -145°)
+      // R1, R2, R3, R4 (angles: +38°, +70°, +110°, +145°)
+      const s = CONFIG.scale;
       this.legs = [
-        new SpiderLeg(0, -1, -Math.PI * 0.22, 64 * SCALE),
-        new SpiderLeg(1, -1, -Math.PI * 0.40, 72 * SCALE),
-        new SpiderLeg(2, -1, -Math.PI * 0.62, 70 * SCALE),
-        new SpiderLeg(3, -1, -Math.PI * 0.82, 62 * SCALE),
-        new SpiderLeg(4,  1,  Math.PI * 0.22, 64 * SCALE),
-        new SpiderLeg(5,  1,  Math.PI * 0.40, 72 * SCALE),
-        new SpiderLeg(6,  1,  Math.PI * 0.62, 70 * SCALE),
-        new SpiderLeg(7,  1,  Math.PI * 0.82, 62 * SCALE)
+        new SpiderLeg(0, -1, -Math.PI * 0.22, 64 * s),
+        new SpiderLeg(1, -1, -Math.PI * 0.40, 72 * s),
+        new SpiderLeg(2, -1, -Math.PI * 0.62, 70 * s),
+        new SpiderLeg(3, -1, -Math.PI * 0.82, 62 * s),
+        new SpiderLeg(4,  1,  Math.PI * 0.22, 64 * s),
+        new SpiderLeg(5,  1,  Math.PI * 0.40, 72 * s),
+        new SpiderLeg(6,  1,  Math.PI * 0.62, 70 * s),
+        new SpiderLeg(7,  1,  Math.PI * 0.82, 62 * s)
       ];
 
-      // Coxa mounting offsets scaled
+      // Coxa mounting offsets relative to body center
       this.coxaMounts = [
-        { angle: -Math.PI * 0.25, dist: 14 * SCALE },
-        { angle: -Math.PI * 0.45, dist: 16 * SCALE },
-        { angle: -Math.PI * 0.65, dist: 16 * SCALE },
-        { angle: -Math.PI * 0.85, dist: 14 * SCALE },
-        { angle:  Math.PI * 0.25, dist: 14 * SCALE },
-        { angle:  Math.PI * 0.45, dist: 16 * SCALE },
-        { angle:  Math.PI * 0.65, dist: 16 * SCALE },
-        { angle:  Math.PI * 0.85, dist: 14 * SCALE }
+        { angle: -Math.PI * 0.25, dist: 14 * s },
+        { angle: -Math.PI * 0.45, dist: 16 * s },
+        { angle: -Math.PI * 0.65, dist: 16 * s },
+        { angle: -Math.PI * 0.85, dist: 14 * s },
+        { angle:  Math.PI * 0.25, dist: 14 * s },
+        { angle:  Math.PI * 0.45, dist: 16 * s },
+        { angle:  Math.PI * 0.65, dist: 16 * s },
+        { angle:  Math.PI * 0.85, dist: 14 * s }
       ];
 
+      // Initialize leg positions
       for (const leg of this.legs) {
         leg.initPosition(this.x, this.y, this.angle);
       }
@@ -777,48 +775,56 @@
 
       const now = performance.now();
 
+      // 1. Check Idle for Autonomous Roaming
       if (this.mode === 'cursor' && now - this.lastMouseActivity > CONFIG.idleTimeoutMs) {
         this.mode = 'autonomous';
         this.autonomousTimer = 0;
         this.pickAutonomousTarget();
       }
 
+      // 2. Autonomous Navigation Behavior
       if (this.mode === 'autonomous') {
         this.updateAutonomous(dt);
       }
 
+      // 3. Scroll Synchronization & Rappel Check
       const curScrollY = window.scrollY;
       this.scrollVelocity = curScrollY - this.lastScrollY;
       this.lastScrollY = curScrollY;
 
+      // If extreme scroll velocity detected, spider rappels on silk
       if (Math.abs(this.scrollVelocity) > 35) {
         this.mode = 'rappel';
+        // Drag body with viewport
         this.targetY += this.scrollVelocity * 0.8;
       } else if (this.mode === 'rappel' && Math.abs(this.scrollVelocity) < 5) {
         this.mode = 'cursor';
       }
 
+      // 4. Locomotion & Steering Physics
       const dx = this.targetX - this.x;
       const dy = this.targetY - this.y;
       const distToTarget = Math.hypot(dx, dy);
 
-      if (this.mode === 'cursor' && distToTarget > 35 && !this.isMicroPaused) {
+      // Micro-pause simulation (sporadic arachnid freeze-and-look)
+      if (this.mode === 'cursor' && distToTarget > 40 && !this.isMicroPaused) {
         this.pauseTimer += dt;
         if (this.pauseTimer > 2800) {
           if (Math.random() < 0.35) {
             this.isMicroPaused = true;
-            setTimeout(() => { this.isMicroPaused = false; }, 200);
+            setTimeout(() => { this.isMicroPaused = false; }, 220);
           }
           this.pauseTimer = 0;
         }
       }
 
-      const speedMax = (this.mode === 'dart') ? CONFIG.dartVelocity : CONFIG.maxVelocity;
+      let speedMax = (this.mode === 'dart') ? CONFIG.dartVelocity : CONFIG.maxVelocity;
 
-      if (distToTarget > 10 && !this.isMicroPaused) {
+      if (distToTarget > 12 && !this.isMicroPaused) {
         this.isWalking = true;
         this.targetAngle = Math.atan2(dy, dx);
 
+        // Smooth acceleration towards target
         const accel = (this.mode === 'dart') ? 0.35 : 0.18;
         const targetVx = (dx / distToTarget) * Math.min(distToTarget * 0.12, speedMax);
         const targetVy = (dy / distToTarget) * Math.min(distToTarget * 0.12, speedMax);
@@ -829,7 +835,7 @@
         this.isWalking = false;
         this.vx *= 0.82;
         this.vy *= 0.82;
-        if (this.mode === 'dart' && distToTarget <= 12) {
+        if (this.mode === 'dart' && distToTarget <= 15) {
           this.mode = 'cursor';
         }
       }
@@ -837,14 +843,22 @@
       this.x += this.vx;
       this.y += this.vy;
 
+      // Smooth heading rotation
       const diffA = angleDiff(this.angle, this.targetAngle);
       this.angle += diffA * CONFIG.turnSpeed;
 
+      // Abdomen secondary lag physics
+      const targetAbdomenA = -this.angle;
+      this.abdomenAngle = lerp(this.abdomenAngle, targetAbdomenA, 0.15);
+
+      // 5. Update Gait & Leg Steps
       this.updateLegs(dt);
 
+      // 6. Update Trailing Silk Web
       const spinneret = this.getSpinneretPosition();
       this.silk.update(spinneret.x, spinneret.y);
 
+      // Add anchor point periodically if moving
       if (this.isWalking && Math.random() < 0.08) {
         this.silk.addAnchor(spinneret.x, spinneret.y);
       }
@@ -854,11 +868,13 @@
       const elData = this.scanner.getRandomInterestingElement();
       if (elData) {
         this.autonomousTarget = elData;
+        // Target an edge or center of the element
         const offsetPctX = 0.2 + Math.random() * 0.6;
         const offsetPctY = 0.2 + Math.random() * 0.6;
         this.targetX = elData.pageX + elData.rect.width * offsetPctX;
         this.targetY = elData.pageY + elData.rect.height * offsetPctY;
       } else {
+        // Roam within visible screen
         this.targetX = window.scrollX + window.innerWidth * (0.2 + Math.random() * 0.6);
         this.targetY = window.scrollY + window.innerHeight * (0.2 + Math.random() * 0.6);
       }
@@ -868,47 +884,56 @@
       this.autonomousTimer += dt;
       const d = dist(this.x, this.y, this.targetX, this.targetY);
 
-      if (d < 20 || this.autonomousTimer > 4500) {
+      if (d < 25 || this.autonomousTimer > 4500) {
         this.autonomousTimer = 0;
         this.pickAutonomousTarget();
       }
     }
 
     updateLegs(dt) {
+      // 1. Advance stepping legs
       const stepSpeedMult = (this.mode === 'dart') ? 2.2 : 1.0;
+      let anyLegStepping = false;
 
       for (const leg of this.legs) {
         if (leg.isStepping) {
           leg.updateStep(stepSpeedMult);
+          anyLegStepping = true;
         }
       }
 
+      // 2. Evaluate if current group should step
       const currentGroupLegs = this.legs.filter(l => l.group === this.gaitGroup);
       const otherGroupLegs = this.legs.filter(l => l.group !== this.gaitGroup);
 
+      // Check if any leg in current group is overstretched or displaced
       let needsStep = false;
       for (const leg of currentGroupLegs) {
         const ideal = leg.getIdealTarget(this.x, this.y, this.angle, this.vx, this.vy);
         const d = dist(leg.footX, leg.footY, ideal.x, ideal.y);
-        if (d > CONFIG.stepDistanceThreshold || (this.isWalking && d > 14)) {
+        if (d > CONFIG.stepDistanceThreshold || (this.isWalking && d > 20 * CONFIG.scale)) {
           needsStep = true;
           break;
         }
       }
 
+      // Step legs of active group if other group is stable/planted
       const otherGroupPlanted = otherGroupLegs.every(l => !l.isStepping);
 
       if (needsStep && otherGroupPlanted) {
         for (const leg of currentGroupLegs) {
           if (!leg.isStepping) {
             const ideal = leg.getIdealTarget(this.x, this.y, this.angle, this.vx, this.vy);
-            const snapped = this.scanner.findClosestFoothold(ideal.x, ideal.y, 40);
+            // Snap to closest DOM foothold
+            const snapped = this.scanner.findClosestFoothold(ideal.x, ideal.y, 50 * CONFIG.scale);
             leg.triggerStep(ideal.x, ideal.y, snapped, this.scanner, this.x, this.y);
           }
         }
+        // Alternate tetrapod group
         this.gaitGroup = 1 - this.gaitGroup;
       }
 
+      // 3. Solve IK for all legs from coxa base
       for (let i = 0; i < this.legs.length; i++) {
         const leg = this.legs[i];
         const mount = this.coxaMounts[i];
@@ -921,7 +946,8 @@
     }
 
     getSpinneretPosition() {
-      const abdomenDist = 16 * SCALE;
+      // Abdomen extends backwards along -angle
+      const abdomenDist = 26 * CONFIG.scale;
       return {
         x: this.x - Math.cos(this.angle) * abdomenDist,
         y: this.y - Math.sin(this.angle) * abdomenDist
@@ -934,28 +960,29 @@
       const screenX = this.x - scrollX;
       const screenY = this.y - scrollY;
 
-      // 1. Silk Web
+      // 1. Render Trailing Silk Web
       this.silk.render(ctx, scrollX, scrollY);
 
-      // 2. 8 Multi-Segment IK Legs
+      // 2. Render 8 Multi-Segment IK Legs
       for (const leg of this.legs) {
         leg.render(ctx, scrollX, scrollY);
       }
 
-      // 3. Central Body (Abdomen & Cephalothorax)
+      // 3. Render Central Body (Abdomen & Cephalothorax)
       ctx.save();
       ctx.translate(screenX, screenY);
       ctx.rotate(this.angle);
+      ctx.scale(CONFIG.scale, CONFIG.scale);
 
       // Render Abdomen (Rear Body)
       this.renderAbdomen(ctx);
 
-      // Render Cephalothorax (Front Body & Multi-Color Optics)
+      // Render Cephalothorax (Front Body & Optics)
       this.renderCephalothorax(ctx);
 
       ctx.restore();
 
-      // 4. Scanning Laser Beam if Autonomous
+      // 4. Render Scanning Laser Sensor Beam if in Autonomous Mode
       if (this.mode === 'autonomous' && this.autonomousTarget) {
         this.renderScanningBeam(ctx, screenX, screenY, scrollX, scrollY);
       }
@@ -963,108 +990,103 @@
 
     renderAbdomen(ctx) {
       ctx.save();
-      const s = SCALE;
-      ctx.translate(-10 * s, 0);
+      ctx.translate(-16, 0);
 
-      // Outer hull with Electric Violet contour & glow
+      // Outer hull
       ctx.beginPath();
-      ctx.ellipse(0, 0, 10 * s, 7 * s, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, 16, 11, 0, 0, Math.PI * 2);
       ctx.fillStyle = CONFIG.colors.bodyDark;
       ctx.fill();
-      ctx.strokeStyle = CONFIG.colors.purple;
-      ctx.lineWidth = 1.2;
-      ctx.shadowColor = CONFIG.colors.magenta;
+      ctx.strokeStyle = CONFIG.colors.primary;
+      ctx.lineWidth = 1.3;
+      ctx.shadowColor = CONFIG.colors.glow;
       ctx.shadowBlur = 6;
       ctx.stroke();
 
-      // Cyber internal telemetry ribs in Hot Neon Magenta
+      // Cyber internal telemetry ribs
       ctx.beginPath();
-      ctx.arc(-2 * s, 0, 5 * s, -Math.PI * 0.5, Math.PI * 0.5);
-      ctx.arc(-5 * s, 0, 3 * s, -Math.PI * 0.5, Math.PI * 0.5);
-      ctx.strokeStyle = CONFIG.colors.magenta;
+      ctx.arc(-4, 0, 8, -Math.PI * 0.5, Math.PI * 0.5);
+      ctx.arc(-8, 0, 5, -Math.PI * 0.5, Math.PI * 0.5);
+      ctx.strokeStyle = CONFIG.colors.secondary;
       ctx.lineWidth = 0.9;
       ctx.stroke();
 
-      // Glowing Spinneret in Pure White & Cyan
+      // Spinneret node at rear
       ctx.beginPath();
-      ctx.arc(-10 * s, 0, 1.8 * s, 0, Math.PI * 2);
-      ctx.fillStyle = CONFIG.colors.white;
-      ctx.shadowColor = CONFIG.colors.cyan;
-      ctx.shadowBlur = 7;
+      ctx.arc(-16, 0, 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = CONFIG.colors.primary;
+      ctx.shadowBlur = 8;
       ctx.fill();
 
       ctx.restore();
     }
 
     renderCephalothorax(ctx) {
-      const s = SCALE;
-
       // Pedicel (waist connector)
       ctx.beginPath();
-      ctx.rect(-4 * s, -2 * s, 4 * s, 4 * s);
-      ctx.fillStyle = CONFIG.colors.cyan;
+      ctx.rect(-6, -3, 6, 6);
+      ctx.fillStyle = CONFIG.colors.primary;
       ctx.fill();
 
-      // Cephalothorax Faceted Cyber Shell in Electric Cyan
+      // Cephalothorax Faceted Cyber Shell
       ctx.beginPath();
-      ctx.moveTo(9 * s, 0);
-      ctx.lineTo(5 * s, -5 * s);
-      ctx.lineTo(-2.5 * s, -5.5 * s);
-      ctx.lineTo(-5 * s, -2.5 * s);
-      ctx.lineTo(-5 * s, 2.5 * s);
-      ctx.lineTo(-2.5 * s, 5.5 * s);
-      ctx.lineTo(5 * s, 5 * s);
+      ctx.moveTo(14, 0);      // Front rostrum
+      ctx.lineTo(8, -8);      // Front-left shoulder
+      ctx.lineTo(-4, -9);     // Mid-left flank
+      ctx.lineTo(-8, -4);     // Rear-left waist
+      ctx.lineTo(-8, 4);      // Rear-right waist
+      ctx.lineTo(-4, 9);      // Mid-right flank
+      ctx.lineTo(8, 8);       // Front-right shoulder
       ctx.closePath();
 
       ctx.fillStyle = CONFIG.colors.bodyDark;
       ctx.fill();
-      ctx.strokeStyle = CONFIG.colors.cyan;
-      ctx.lineWidth = 1.3;
-      ctx.shadowColor = CONFIG.colors.glowCyan;
-      ctx.shadowBlur = 7;
+      ctx.strokeStyle = CONFIG.colors.primary;
+      ctx.lineWidth = 1.4;
+      ctx.shadowColor = CONFIG.colors.glow;
+      ctx.shadowBlur = 8;
       ctx.stroke();
 
-      // Center Cyber Core Glyph in Hot Neon Magenta
+      // Center Cyber Core Glyph
       ctx.beginPath();
-      ctx.arc(0, 0, 2.0 * s, 0, Math.PI * 2);
-      ctx.fillStyle = CONFIG.colors.magenta;
-      ctx.shadowColor = CONFIG.colors.glowMagenta;
-      ctx.shadowBlur = 5;
+      ctx.arc(0, 0, 3, 0, Math.PI * 2);
+      ctx.fillStyle = CONFIG.colors.secondary;
       ctx.fill();
 
-      // Chelicerae / Feelers in Solar Gold
-      ctx.lineWidth = 1.0;
-      ctx.strokeStyle = CONFIG.colors.gold;
+      // Chelicerae / Pedipalps (Front feelers)
+      ctx.lineWidth = 1.2;
+      ctx.strokeStyle = CONFIG.colors.secondary;
+
+      // Left palp
       ctx.beginPath();
-      ctx.moveTo(8 * s, -2.5 * s);
-      ctx.lineTo(13 * s, -4 * s);
-      ctx.lineTo(15 * s, -2 * s);
+      ctx.moveTo(12, -4);
+      ctx.lineTo(19, -6);
+      ctx.lineTo(22, -3);
       ctx.stroke();
 
+      // Right palp
       ctx.beginPath();
-      ctx.moveTo(8 * s, 2.5 * s);
-      ctx.lineTo(13 * s, 4 * s);
-      ctx.lineTo(15 * s, 2 * s);
+      ctx.moveTo(12, 4);
+      ctx.lineTo(19, 6);
+      ctx.lineTo(22, 3);
       ctx.stroke();
 
-      // Multi-Colored Optical Sensor Array (Eyes)
+      // Optical Sensor Cluster (Glowing Eyes)
       const eyes = [
-        // Center main optics: Pure White & Magenta
-        { x: 8.5 * s, y: -1.2 * s, r: 1.1 * s, c: CONFIG.colors.white, glow: CONFIG.colors.glowMagenta },
-        { x: 8.5 * s, y:  1.2 * s, r: 1.1 * s, c: CONFIG.colors.white, glow: CONFIG.colors.glowMagenta },
-        // Outer forward optics: Electric Lime
-        { x: 6.5 * s, y: -3.2 * s, r: 0.9 * s, c: CONFIG.colors.lime, glow: CONFIG.colors.glowLime },
-        { x: 6.5 * s, y:  3.2 * s, r: 0.9 * s, c: CONFIG.colors.lime, glow: CONFIG.colors.glowLime },
-        // Flank optics: Solar Gold
-        { x: 4.5 * s, y: -4.0 * s, r: 0.8 * s, c: CONFIG.colors.gold, glow: CONFIG.colors.glowGold },
-        { x: 4.5 * s, y:  4.0 * s, r: 0.8 * s, c: CONFIG.colors.gold, glow: CONFIG.colors.glowGold }
+        { x: 13, y: -2, r: 1.5, c: '#ffffff' },
+        { x: 13, y: 2,  r: 1.5, c: '#ffffff' },
+        { x: 10, y: -5, r: 1.2, c: CONFIG.colors.primary },
+        { x: 10, y: 5,  r: 1.2, c: CONFIG.colors.primary },
+        { x: 7,  y: -6, r: 1.0, c: CONFIG.colors.secondary },
+        { x: 7,  y: 6,  r: 1.0, c: CONFIG.colors.secondary }
       ];
 
       for (const eye of eyes) {
         ctx.beginPath();
         ctx.arc(eye.x, eye.y, eye.r, 0, Math.PI * 2);
         ctx.fillStyle = eye.c;
-        ctx.shadowColor = eye.glow;
+        ctx.shadowColor = CONFIG.colors.primary;
         ctx.shadowBlur = 5;
         ctx.fill();
       }
@@ -1078,14 +1100,14 @@
 
       ctx.save();
       const grad = ctx.createLinearGradient(screenX, screenY, targetCenterX, targetCenterY);
-      grad.addColorStop(0, 'rgba(255, 0, 127, 0.45)');
-      grad.addColorStop(0.5, 'rgba(0, 245, 255, 0.25)');
-      grad.addColorStop(1, 'rgba(57, 255, 20, 0)');
+      grad.addColorStop(0, 'rgba(94, 234, 212, 0.45)');
+      grad.addColorStop(0.7, 'rgba(94, 234, 212, 0.15)');
+      grad.addColorStop(1, 'rgba(94, 234, 212, 0)');
 
       ctx.beginPath();
       ctx.moveTo(screenX, screenY);
-      ctx.lineTo(targetCenterX - 14, targetCenterY - 8);
-      ctx.lineTo(targetCenterX + 14, targetCenterY + 8);
+      ctx.lineTo(targetCenterX - 20, targetCenterY - 10);
+      ctx.lineTo(targetCenterX + 20, targetCenterY + 10);
       ctx.closePath();
 
       ctx.fillStyle = grad;
@@ -1105,6 +1127,7 @@
       this.targetEl = null;
       this.coordsEl = null;
       this.fpsEl = null;
+      this.toggleBtn = null;
       this.frameCount = 0;
       this.lastFpsUpdate = performance.now();
       this.currentFps = 60;
@@ -1120,7 +1143,7 @@
         <div class="spider-hud-header" title="Click to toggle HUD details">
           <div class="spider-hud-title">
             <span class="spider-hud-badge"></span>
-            <span>CRAWLER // MULTI-NEON</span>
+            <span>CRAWLER // IK.v2</span>
           </div>
           <button type="button" class="spider-hud-toggle-btn" aria-label="Collapse HUD">_</button>
         </div>
@@ -1131,11 +1154,11 @@
           </div>
           <div class="spider-hud-row">
             <span class="spider-hud-label">TARGET</span>
-            <span class="spider-hud-value highlight-magenta" id="spider-hud-target">&lt;CURSOR&gt;</span>
+            <span class="spider-hud-value" id="spider-hud-target">&lt;CURSOR&gt;</span>
           </div>
           <div class="spider-hud-row">
             <span class="spider-hud-label">COORDS</span>
-            <span class="spider-hud-value highlight-lime" id="spider-hud-coords">0, 0</span>
+            <span class="spider-hud-value" id="spider-hud-coords">0, 0</span>
           </div>
           <div class="spider-hud-row">
             <span class="spider-hud-label">ENGINE</span>
@@ -1143,10 +1166,10 @@
           </div>
           <div class="spider-hud-actions">
             <button type="button" class="spider-btn" id="spider-btn-mode">AUTO HUNT</button>
-            <button type="button" class="spider-btn secondary" id="spider-btn-power">PAUSE</button>
+            <button type="button" class="spider-btn" id="spider-btn-power">PAUSE</button>
           </div>
           <div class="spider-hud-hint">
-            Press <kbd>C</kbd> to toggle • Click to grapple
+            Press <kbd>C</kbd> to toggle • Click to shoot silk
           </div>
         </div>
       `;
@@ -1162,6 +1185,7 @@
       this.collapseBtn = this.container.querySelector('.spider-hud-toggle-btn');
       this.header = this.container.querySelector('.spider-hud-header');
 
+      // Bind events
       this.header.addEventListener('click', (e) => {
         if (e.target.tagName !== 'BUTTON') this.toggleCollapse();
       });
@@ -1204,7 +1228,7 @@
         if (!this.isCollapsed) {
           this.statusEl.textContent = this.spider.isPaused ? 'PAUSED' : this.spider.mode.toUpperCase();
           this.coordsEl.textContent = `${Math.round(this.spider.x)}, ${Math.round(this.spider.y)}`;
-          this.fpsEl.textContent = `${this.currentFps} FPS // 60% RIG`;
+          this.fpsEl.textContent = `${this.currentFps} FPS // IK OK`;
 
           let targetText = '<CURSOR>';
           if (this.spider.mode === 'autonomous' && this.spider.autonomousTarget) {
@@ -1232,6 +1256,9 @@
     }
 
     init() {
+      updateThemeColors();
+
+      // Create transparent fixed overlay canvas
       this.canvas = document.createElement('canvas');
       this.canvas.id = 'spider-crawler-canvas';
       this.canvas.setAttribute('aria-hidden', 'true');
@@ -1240,14 +1267,20 @@
 
       this.resizeCanvas();
 
+      // Initialize Spider entity & HUD
       this.spider = new SpiderCrawler();
       this.hud = new SpiderHUD(this.spider);
 
+      // Initial DOM scan
       this.spider.scanner.scan();
+
+      // Bind interaction listeners
       this.bindEvents();
 
+      // Start 60fps+ Animation Loop
       requestAnimationFrame((t) => this.loop(t));
-      console.info('[SpiderCrawler] Multi-Neon 60% Scale Web Crawler initialized.');
+
+      console.info('[SpiderCrawler] Procedural Web Crawler initialized.');
     }
 
     resizeCanvas() {
@@ -1262,6 +1295,7 @@
     }
 
     bindEvents() {
+      // Mouse move tracking
       window.addEventListener('mousemove', (e) => {
         if (!this.spider || this.spider.isPaused) return;
         const pageX = e.clientX + window.scrollX;
@@ -1269,8 +1303,10 @@
         this.spider.setTarget(pageX, pageY, 'cursor');
       }, { passive: true });
 
+      // Click to shoot silk web grapple & dart
       window.addEventListener('click', (e) => {
         if (!this.spider || this.spider.isPaused) return;
+        // Don't intercept clicks inside the HUD widget
         if (e.target.closest('.spider-hud-widget')) return;
 
         const pageX = e.clientX + window.scrollX;
@@ -1278,18 +1314,22 @@
         this.spider.shootWeb(pageX, pageY);
       }, { passive: true });
 
+      // Keyboard shortcut 'C' to toggle crawler visibility/active state
       window.addEventListener('keydown', (e) => {
         if (e.key === 'c' || e.key === 'C') {
+          // If not typing in an input/textarea
           if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
           this.toggleCrawler();
         }
       });
 
+      // Window resize
       window.addEventListener('resize', () => {
         this.resizeCanvas();
         this.spider.scanner.scan();
       }, { passive: true });
 
+      // Window scroll: rescan DOM footholds periodically
       window.addEventListener('scroll', () => {
         this.spider.scanner.scan();
       }, { passive: true });
@@ -1310,6 +1350,7 @@
       const scrollX = window.scrollX;
       const scrollY = window.scrollY;
 
+      // Clear canvas
       this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
       if (this.spider && this.spider.isVisible) {

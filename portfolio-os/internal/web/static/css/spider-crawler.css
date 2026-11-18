@@ -1,23 +1,16 @@
 /* ==========================================================================
    Procedural Spider Web Crawler & DOM Physics Overlay
    Stylized Wireframe Cyber Aesthetic & DOM Foothold Snapping
-   Multi-chromatic Neon Palette & High-Visibility Anchor Highlights
    ========================================================================== */
 
 :root {
-  --spider-cyan: #00f5ff;
-  --spider-magenta: #ff007f;
-  --spider-lime: #39ff14;
-  --spider-gold: #ffd600;
-  --spider-purple: #bf5af2;
-  --spider-primary: var(--spider-cyan);
-  --spider-secondary: var(--spider-magenta);
-  --spider-accent: var(--spider-lime);
-  --spider-glow-cyan: rgba(0, 245, 255, 0.6);
-  --spider-glow-magenta: rgba(255, 0, 127, 0.7);
-  --spider-glow-lime: rgba(57, 255, 20, 0.6);
-  --spider-hud-bg: rgba(7, 12, 24, 0.90);
-  --spider-hud-border: rgba(0, 245, 255, 0.4);
+  --spider-primary: var(--primary-mint, #5eead4);
+  --spider-secondary: var(--mint-accent, #7ce0c3);
+  --spider-accent: #38bdf8;
+  --spider-glow: rgba(94, 234, 212, 0.35);
+  --spider-glow-strong: rgba(94, 234, 212, 0.75);
+  --spider-hud-bg: rgba(7, 12, 24, 0.88);
+  --spider-hud-border: rgba(94, 234, 212, 0.25);
   --spider-text: #f8fafc;
   --spider-text-muted: #94a3b8;
   --spider-mono-font: 'Fira Code', 'JetBrains Mono', 'SF Mono', Consolas, monospace;
@@ -35,57 +28,26 @@
   display: block;
 }
 
-/* High-Visibility Bright Glowing Highlights on DOM Elements Anchored by Spider Feet */
+/* Subtle Reactive Distortion on DOM Elements anchored by Spider Feet */
 .spider-anchored {
-  transition: transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1),
-              box-shadow 0.22s ease,
-              border-color 0.22s ease,
-              outline 0.22s ease,
+  transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 0.25s ease,
+              border-color 0.25s ease,
               text-shadow 0.2s ease !important;
-  border-color: var(--spider-magenta) !important;
-  box-shadow: 0 0 16px var(--spider-glow-magenta),
-              0 0 32px var(--spider-glow-cyan),
-              inset 0 0 12px var(--spider-glow-lime) !important;
-  outline: 2px dashed var(--spider-cyan) !important;
-  outline-offset: 3px !important;
-  animation: spider-anchor-sheen 1.8s infinite alternate ease-in-out;
+  box-shadow: 0 0 14px var(--spider-glow) !important;
+  border-color: rgba(94, 234, 212, 0.65) !important;
+  outline: 1px dashed rgba(94, 234, 212, 0.45);
+  outline-offset: 2px;
 }
 
-/* Bright text glow for anchored text nodes, headings, and buttons */
+/* If text nodes/links are anchored */
 a.spider-anchored,
-button.spider-anchored,
+span.spider-anchored,
 h1.spider-anchored,
 h2.spider-anchored,
 h3.spider-anchored,
-h4.spider-anchored,
-p.spider-anchored,
-span.spider-anchored,
-strong.spider-anchored {
-  text-shadow: 0 0 10px var(--spider-magenta),
-               0 0 20px var(--spider-cyan),
-               0 0 30px var(--spider-lime) !important;
-  color: #ffffff !important;
-}
-
-@keyframes spider-anchor-sheen {
-  0% {
-    box-shadow: 0 0 14px var(--spider-glow-magenta),
-                0 0 28px var(--spider-glow-cyan),
-                inset 0 0 10px var(--spider-glow-lime);
-    outline-color: var(--spider-cyan);
-  }
-  50% {
-    box-shadow: 0 0 22px var(--spider-glow-lime),
-                0 0 38px var(--spider-glow-magenta),
-                inset 0 0 14px var(--spider-glow-cyan);
-    outline-color: var(--spider-magenta);
-  }
-  100% {
-    box-shadow: 0 0 18px var(--spider-glow-cyan),
-                0 0 34px var(--spider-glow-magenta),
-                inset 0 0 12px var(--spider-glow-lime);
-    outline-color: var(--spider-lime);
-  }
+p.spider-anchored {
+  text-shadow: 0 0 8px rgba(94, 234, 212, 0.6);
 }
 
 /* Cyber Floating HUD Widget */
@@ -99,32 +61,30 @@ strong.spider-anchored {
   line-height: 1.4;
   color: var(--spider-text);
   background: var(--spider-hud-bg);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--spider-hud-border);
   border-radius: 8px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55),
-              0 0 15px rgba(0, 245, 255, 0.25),
-              0 0 30px rgba(255, 0, 127, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), 0 0 15px rgba(94, 234, 212, 0.15);
   pointer-events: auto;
   user-select: none;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
-  max-width: 310px;
+  max-width: 320px;
 }
 
 .spider-hud-widget.is-collapsed {
-  max-width: 170px;
-  background: rgba(7, 12, 24, 0.94);
+  max-width: 175px;
+  background: rgba(7, 12, 24, 0.92);
 }
 
 .spider-hud-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 7px 11px;
-  background: linear-gradient(90deg, rgba(0, 245, 255, 0.12), rgba(255, 0, 127, 0.12));
-  border-bottom: 1px solid rgba(0, 245, 255, 0.25);
+  padding: 8px 12px;
+  background: rgba(94, 234, 212, 0.08);
+  border-bottom: 1px solid rgba(94, 234, 212, 0.15);
   cursor: pointer;
   gap: 8px;
 }
@@ -135,7 +95,7 @@ strong.spider-anchored {
   gap: 6px;
   font-weight: 600;
   letter-spacing: 0.05em;
-  color: var(--spider-cyan);
+  color: var(--spider-primary);
   text-transform: uppercase;
 }
 
@@ -144,14 +104,14 @@ strong.spider-anchored {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--spider-lime);
-  box-shadow: 0 0 8px var(--spider-lime);
-  animation: spider-pulse 1.8s infinite ease-in-out;
+  background: var(--spider-primary);
+  box-shadow: 0 0 6px var(--spider-primary);
+  animation: spider-pulse 2s infinite ease-in-out;
 }
 
 .spider-hud-widget.is-paused .spider-hud-badge {
-  background: var(--spider-gold);
-  box-shadow: 0 0 8px var(--spider-gold);
+  background: #f59e0b;
+  box-shadow: 0 0 6px #f59e0b;
   animation: none;
 }
 
@@ -169,14 +129,14 @@ strong.spider-anchored {
 
 .spider-hud-toggle-btn:hover {
   color: var(--spider-text);
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .spider-hud-body {
-  padding: 9px 11px;
+  padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 8px;
 }
 
 .spider-hud-widget.is-collapsed .spider-hud-body {
@@ -187,50 +147,42 @@ strong.spider-anchored {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .spider-hud-label {
   color: var(--spider-text-muted);
-  font-size: 9.5px;
-  letter-spacing: 0.04em;
+  font-size: 10px;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
 }
 
 .spider-hud-value {
-  font-weight: 600;
+  color: var(--spider-primary);
+  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 170px;
-  color: var(--spider-cyan);
-}
-
-.spider-hud-value.highlight-magenta {
-  color: var(--spider-magenta);
-}
-
-.spider-hud-value.highlight-lime {
-  color: var(--spider-lime);
 }
 
 .spider-hud-actions {
   display: flex;
   gap: 6px;
-  margin-top: 3px;
+  margin-top: 4px;
 }
 
 .spider-btn {
   flex: 1;
-  background: rgba(0, 245, 255, 0.1);
-  border: 1px solid rgba(0, 245, 255, 0.35);
-  color: var(--spider-cyan);
+  background: rgba(94, 234, 212, 0.1);
+  border: 1px solid rgba(94, 234, 212, 0.3);
+  color: var(--spider-primary);
   font-family: inherit;
-  font-size: 9.5px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  padding: 5px 6px;
+  padding: 5px 8px;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -238,21 +190,14 @@ strong.spider-anchored {
 }
 
 .spider-btn:hover {
-  background: var(--spider-cyan);
+  background: var(--spider-primary);
   color: #070c18;
-  box-shadow: 0 0 12px var(--spider-glow-cyan);
+  box-shadow: 0 0 10px var(--spider-glow);
 }
 
-.spider-btn.secondary {
-  border-color: rgba(255, 0, 127, 0.4);
-  color: var(--spider-magenta);
-  background: rgba(255, 0, 127, 0.08);
-}
-
-.spider-btn.secondary:hover {
-  background: var(--spider-magenta);
-  color: #ffffff;
-  box-shadow: 0 0 12px var(--spider-glow-magenta);
+.spider-btn.active {
+  background: var(--spider-primary);
+  color: #070c18;
 }
 
 .spider-hud-hint {
@@ -260,12 +205,12 @@ strong.spider-anchored {
   color: var(--spider-text-muted);
   text-align: center;
   margin-top: 2px;
-  opacity: 0.85;
+  opacity: 0.8;
 }
 
 .spider-hud-hint kbd {
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 3px;
   padding: 1px 4px;
   color: var(--spider-text);
@@ -275,11 +220,11 @@ strong.spider-anchored {
 @keyframes spider-pulse {
   0%, 100% {
     transform: scale(1);
-    opacity: 0.95;
+    opacity: 0.9;
   }
   50% {
-    transform: scale(1.4);
-    opacity: 0.55;
+    transform: scale(1.35);
+    opacity: 0.5;
   }
 }
 
@@ -298,6 +243,6 @@ strong.spider-anchored {
   .spider-hud-widget {
     bottom: 16px;
     right: 16px;
-    max-width: 210px;
+    max-width: 220px;
   }
 }
